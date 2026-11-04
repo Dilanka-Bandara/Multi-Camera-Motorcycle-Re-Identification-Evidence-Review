@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=75,<81"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "moto-reid"
+version = "0.1.0"
+description = "Multi-camera motorcycle re-identification and independent evidence review"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn[standard]>=0.30,<1",
+  "pydantic>=2.9,<3", "python-multipart>=0.0.18,<1", "PyYAML>=6,<7",
+  "numpy>=1.26,<3", "scipy>=1.14,<2", "scikit-learn>=1.5,<2",
+  "opencv-python-headless>=4.10,<5", "Pillow>=10.4,<13",
+  "ultralytics>=8.3,<9", "transformers>=4.46,<5",
+  "huggingface-hub>=0.26,<1", "safetensors>=0.4,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.24,<2", "httpx>=0.27,<1", "ruff>=0.8,<1"]
+keypoints = ["lightglue @ git+https://github.com/cvg/LightGlue.git"]
+
+[tool.setuptools.packages.find]
+where = ["backend"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["backend"]
+markers = ["slow: model or real-video integration checks"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+exclude = [".tools"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]

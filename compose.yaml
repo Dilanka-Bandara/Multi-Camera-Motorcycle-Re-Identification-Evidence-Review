@@ -1,0 +1,11 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        TORCH_VARIANT: cpu
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data/user
+    restart: unless-stopped
