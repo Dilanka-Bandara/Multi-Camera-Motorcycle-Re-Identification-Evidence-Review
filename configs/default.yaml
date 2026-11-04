@@ -1,0 +1,105 @@
+target:
+  classes: [motorcycle]          # or [car, motorcycle, bus, truck] for "all_vehicles" mode
+  rider_class: person
+
+detector:
+  mode: yolo                     # yolo | groundtruth
+  weights: yolo26s.pt
+  fallback_weights: yolo11s.pt
+  imgsz: 960
+  conf: 0.25
+  iou: 0.5
+  half: auto                     # true on CUDA, false on CPU
+  device: auto                   # cuda if available else cpu
+  max_process_height: 1080       # downscale input before detection
+  vid_stride: auto               # 1 if fps<=15, 2 if fps<=30, else round(fps/15)
+
+tracker:
+  type: botsort.yaml             # or bytetrack.yaml
+  min_track_frames: 6
+  stitching:
+    enabled: true
+    max_gap_s: 2.0
+    max_center_jump: 0.15        # normalized distance
+    min_appearance_sim: 0.75
+
+crops:
+  top_k: 8
+  min_box_height_px: 32
+  min_frame_gap: 3               # temporal diversity between chosen crops
+  border_margin: 0.01            # box touching border within this margin = truncated
+  occlusion_iou: 0.3
+  weights: {size: 0.35, conf: 0.25, sharpness: 0.30, aspect: 0.10}
+
+embedding:
+  backend: dinov2                # dinov2 | dummy
+  model: facebook/dinov2-small
+  batch_size: 32
+  parts: true                    # rider + vehicle part embeddings
+
+color:
+  hsv_bins: [16, 4, 4]
+
+cameras:
+  A:
+    name: Camera A
+    start_time_s: 0.0            # absolute time of frame 0 (seconds, any shared epoch)
+  B:
+    name: Camera B
+    start_time_s: 0.0
+
+topology:
+  direction: A_to_B              # A_to_B | B_to_A | both
+  min_transit_s: 5.0
+  max_transit_s: 60.0
+  expected_exit_dir_A: null      # e.g. [1, 0] = moving right in image A; null = unknown
+  expected_entry_dir_B: null
+  clock_offset:
+    mode: estimate               # estimate | fixed | none
+    fixed_s: 0.0
+    search_range_s: 120.0
+    min_confident_pairs: 3
+    confident_visual_sim: 0.80
+
+matching:
+  top_n_candidates: 5
+  set_sim_top_m: 5
+  weights: {visual: 0.55, color: 0.15, temporal: 0.20, direction: 0.10}
+  temporal_soft_tau_s: 10.0
+  min_match_score: 0.55          # cost of choosing "no match" in assignment
+  ambiguity_margin: 0.05         # runner-up within this = lookalike flag
+
+verifier:
+  keypoints:
+    backend: lightglue           # lightglue | sift
+    max_keypoints: 512
+    pairs_to_check: 3
+    min_inliers_pass: 15
+    max_inliers_fail: 4
+  part_disagreement_gap: 0.20    # vehicle similar but rider very different (or vice versa)
+  min_track_quality: 0.35
+  p_accept: 0.75
+  p_reject: 0.35
+  review_top_n: 3                # verifier reviews top-N candidates per query, not only the winner
+
+runtime:
+  data_dir: /app/data
+  seed: 42
+
+groundtruth:
+  drop_rate: 0.0
+  fragment_prob: 0.0
+  fragment_gap_frames: 2
+  confidence: 1.0
+
+fixture:
+  width: 640
+  height: 360
+  fps: 15
+  duration_s: 60
+  transit_min_s: 8.0
+  transit_max_s: 15.0
+  clock_offset_s: 4.0
+  camera_b_scale: 0.8
+  noise_std: 1.5
+  blur_radius: 0.6

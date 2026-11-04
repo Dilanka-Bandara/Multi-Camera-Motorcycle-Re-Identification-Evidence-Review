@@ -25,7 +25,7 @@ where = ["backend"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["backend"]
+pythonpath = ["backend", "."]
 markers = ["slow: model or real-video integration checks"]
 
 [tool.ruff]

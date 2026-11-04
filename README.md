@@ -2,7 +2,7 @@
 
 Multi-Camera Motorcycle Re-Identification & Evidence Review.
 
-**Build status: Phase 0 in progress. This is the application foundation, not a finished inference system.** See [PROGRESS.md](PROGRESS.md) for verified checks and blockers, and [BUILD_GUIDE.md](BUILD_GUIDE.md) for the complete specification.
+**Build status: Phases 0 and 1 complete. Configuration, schemas and the synthetic fixture are available; inference and evidence review are not yet implemented.** See [PROGRESS.md](PROGRESS.md) for verified checks and blockers, and [BUILD_GUIDE.md](BUILD_GUIDE.md) for the complete specification.
 
 ## Stack
 
@@ -64,5 +64,43 @@ the running HTTP endpoints. The transcript is saved to `data/checks/phase0.log`.
 The script stops on errors and does not commit or push code.
 
 ## Data and credentials
+
+### Synthetic development fixture (Phase 1)
+
+After installing the project with Python 3.11 and installing ffmpeg, run:
+
+```powershell
+python scripts/make_dev_fixture.py --out data/fixtures/dev
+```
+
+Or use the existing application image against current source in PowerShell:
+
+```powershell
+docker compose run --rm --no-deps --volume "${PWD}:/workspace" --workdir /workspace -e PYTHONPATH=/workspace/backend app python scripts/make_dev_fixture.py --out data/fixtures/dev
+```
+
+This creates two 60-second H.264 videos, normalized GT CSVs and evaluation metadata.
+Existing fixture outputs are never overwritten: choose a new output directory to regenerate.
+There are 9 shared identities, 3 A-only identities, 2 B-only identities and 2 lookalike pairs.
+Camera B has smaller sprites, a colour shift, blur and noise. Physical transit is 8–15 seconds;
+the preset adds 4 seconds to B's camera timestamps. Metadata records truth for evaluation,
+not as input to matching or clock estimation. The fixture uses full rider-and-bike rectangles;
+it does not yet provide separate person detections.
+
+`load_config("dev_fixture", overrides=...)` deep-merges defaults, a named preset and
+per-run overrides, then validates the result. Set `MOTO_CONFIG_DIR` or pass `config_dir`
+when loading config outside the source checkout. The Docker image includes the YAML files
+and generator; baking the generated videos remains Phase 8 work.
+
+`groundtruth.drop_rate`, `fragment_prob`, `fragment_gap_frames` and `confidence` control
+the simulated detector. Fragmentation splits each selected track once, with a missing-frame
+gap and collision-free replacement ID. Seeds come from `runtime.seed`.
+
+Run `python -m pytest -q` and `ruff check .`, or use the existing container check helper
+(`scripts/check_phase0_container.py`), which now discovers the Phase 1 tests too.
+The encoding test uses small frames for speed; full-size generated videos were separately
+verified with ffprobe. The frontend mirrors the backend contracts in `src/types.ts`.
+
+### Storage policy
 
 Do not commit recordings, model weights, generated run data, or secrets. Only explicitly attributed demo media under `samples/` may be committed. No paid API credentials are required.

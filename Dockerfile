@@ -17,6 +17,9 @@ COPY pyproject.toml ./
 COPY backend/ ./backend/
 RUN pip install --no-cache-dir '.[keypoints]'
 RUN python -m app.models_download
+COPY configs/ /app/configs/
+COPY scripts/ /app/scripts/
+ENV MOTO_CONFIG_DIR=/app/configs
 COPY --from=frontend /frontend/dist /app/static
 RUN useradd --create-home --uid 10001 moto && mkdir -p /app/data/user /app/models && chown -R moto:moto /app
 ENV HF_HUB_OFFLINE=1

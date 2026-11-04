@@ -1,0 +1,14 @@
+detector:
+  mode: groundtruth
+embedding:
+  backend: dummy
+cameras:
+  B:
+    start_time_s: 4.0
+topology:
+  min_transit_s: 5.0
+  max_transit_s: 20.0
+  expected_exit_dir_A: [1, 0]
+  expected_entry_dir_B: [1, 0]
+runtime:
+  data_dir: /app/data/user
