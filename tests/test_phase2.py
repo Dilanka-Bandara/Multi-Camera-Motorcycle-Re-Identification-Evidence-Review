@@ -174,12 +174,32 @@ def test_fixture_pipeline_recovers_fragmented_identities(tmp_path: Path) -> None
                 assert (out / crop.path_full).is_file()
                 assert (out / crop.path_vehicle).is_file()
             frames = sorted(c.frame_idx for c in track.crops)
-            assert all(b - a >= cfg.crops.min_frame_gap
-                       for a, b in zip(frames, frames[1:], strict=False))
+            assert all(
+                b - a >= cfg.crops.min_frame_gap for a, b in zip(frames, frames[1:], strict=False)
+            )
         recovered = sum(len(ids) == 1 for ids in votes.values()) / identity_count
         assert recovered >= 0.9
         assert probe_video(out / f"camera_{camera}.mp4", 0).frame_count == 900
     assert merged_count > 0
+    from app.matching.similarity import set_similarity
+    from app.pipeline.representation import load_representation
+
+    camera_tracks = {
+        camera: [
+            Track.model_validate(t) for t in json.loads((out / f"tracks_{camera}.json").read_text())
+        ]
+        for camera in ("A", "B")
+    }
+    query = next(t for t in camera_tracks["A"] if 0 in t.raw_track_ids)
+    same = next(t for t in camera_tracks["B"] if 0 in t.raw_track_ids)
+    different = next(t for t in camera_tracks["B"] if 4 in t.raw_track_ids)
+    reps = [
+        load_representation(out / "representations" / f"{t.track_id}.npz")
+        for t in (query, same, different)
+    ]
+    assert set_similarity(reps[0].emb_full, reps[1].emb_full, 5) > set_similarity(
+        reps[0].emb_full, reps[2].emb_full, 5
+    )
     with pytest.raises(FileExistsError):
         run_pipeline(cfg, videos, out, truth)
 

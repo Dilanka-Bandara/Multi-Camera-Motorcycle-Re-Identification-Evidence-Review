@@ -94,10 +94,12 @@ class EmbeddingConfig(StrictModel):
     model: str
     batch_size: Count
     parts: bool
+    dummy_grid: Count
 
 
 class ColorConfig(StrictModel):
     hsv_bins: tuple[Count, Count, Count]
+    center_fraction: Probability
 
 
 class CameraConfig(StrictModel):

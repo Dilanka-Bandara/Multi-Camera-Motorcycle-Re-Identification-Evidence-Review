@@ -14,6 +14,7 @@ from app.pipeline.detect_track import COCO_CLASSES, detect_track
 from app.pipeline.gt_detector import detect_groundtruth
 from app.pipeline.ingest import ingest_video
 from app.pipeline.motion import summarize_motion
+from app.pipeline.representation import represent_tracks
 from app.pipeline.rider_assoc import associate_riders
 from app.pipeline.stitching import Fragment, stitch_fragments
 from app.pipeline.track_quality import score_track
@@ -148,6 +149,11 @@ def run_pipeline(
             LOGGER.info(
                 "run_id=%s camera=%s tracks=%s dropped=%s", run_id, camera, len(tracks), dropped
             )
+            t0 = time.perf_counter()
+            metadata.setdefault("representations", {})[camera] = represent_tracks(
+                tracks, run_dir, config, models_dir
+            )
+            timings[f"representations_{camera}"] = time.perf_counter() - t0
         metadata["state"] = "done"
     except Exception as exc:
         metadata["state"] = "failed"

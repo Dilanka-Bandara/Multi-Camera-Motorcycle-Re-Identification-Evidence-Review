@@ -43,9 +43,11 @@ embedding:
   model: facebook/dinov2-small
   batch_size: 32
   parts: true                    # rider + vehicle part embeddings
+  dummy_grid: 4
 
 color:
   hsv_bins: [16, 4, 4]
+  center_fraction: 0.8
 
 cameras:
   A:

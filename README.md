@@ -119,3 +119,32 @@ configured second local model on failure. Runtime downloads and automatic tracke
 dependency installation are disabled. Run the optional real-video test using
 `MOTO_TEST_WEIGHTS` and `MOTO_TEST_VIDEO`; it skips when local assets are missing.
 All `.env` and `.env.*` files are excluded from version control.
+
+### Appearance representations (Phase 3)
+
+The pipeline now also writes `representations/<track_id>.npz` with full, vehicle
+and available rider embeddings, normalized mean embeddings, HSV histograms and
+Lab colour means. Archives contain numeric arrays and are loaded with pickle disabled.
+The fixture defaults to a deterministic histogram/spatial-statistics embedder.
+DINOv2 concatenates CLS and mean patch tokens and uses CUDA FP16 autocast when available.
+Its local weights must exist before execution; it never downloads at runtime.
+
+Prepare a separate validation image (downloads occur only during Docker build):
+
+```powershell
+$applicationImage = docker compose images -q app
+# For GPU validation add: --build-arg TORCH_VARIANT=cu124
+docker build -f scripts/Dockerfile.dino-test --build-arg "APP_IMAGE=$applicationImage" -t motoreid-dino-test .
+docker run --rm --network none --volume "${PWD}:/workspace" --workdir /workspace -e PYTHONPATH=/workspace/backend -e MOTO_CONFIG_DIR=/workspace/configs -e MOTO_DINO_MODEL=/opt/dinov2-small motoreid-dino-test python -m pytest tests/test_phase3.py -q
+```
+
+For a GPU-enabled validation image, run the full selected-crop memory benchmark:
+
+```powershell
+docker run --rm --network none --gpus all --volume "${PWD}:/workspace" --workdir /workspace -e PYTHONPATH=/workspace/backend -e MOTO_CONFIG_DIR=/workspace/configs motoreid-dino-test python scripts/check_dino_gpu.py --run data/user/runs/phase2-validation --model /opt/dinov2-small --out data/checks/dino-gpu.json
+```
+
+Use your existing fixture run path for `--run` and `MOTO_TEST_RUN` if different.
+The benchmark requires Python 3.11 and checks peak allocated CUDA memory below 3 GiB.
+Appearance alone does not establish identity: DINOv2 can prefer a wrong synthetic
+lookalike. Temporal matching and independent verification are subsequent phases.

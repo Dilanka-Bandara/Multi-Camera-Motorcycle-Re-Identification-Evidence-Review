@@ -1,0 +1,12 @@
+# Phase 3 validation image; runtime model provisioning is integrated in Phase 8.
+ARG APP_IMAGE
+FROM ${APP_IMAGE}
+USER root
+ARG TORCH_VARIANT=cpu
+RUN if [ "$TORCH_VARIANT" != cpu ]; then \
+      pip install --no-cache-dir torch==2.6.0 torchvision==0.21.0 \
+      --index-url https://download.pytorch.org/whl/${TORCH_VARIANT}; fi
+RUN pip install --no-cache-dir 'pytest>=8,<10' 'pytest-timeout>=2,<3' 'ruff>=0.8,<1'
+ENV HF_HUB_OFFLINE=0
+RUN python -c "from transformers import AutoImageProcessor, AutoModel; name='facebook/dinov2-small'; AutoImageProcessor.from_pretrained(name).save_pretrained('/opt/dinov2-small'); AutoModel.from_pretrained(name).save_pretrained('/opt/dinov2-small')"
+ENV HF_HUB_OFFLINE=1
