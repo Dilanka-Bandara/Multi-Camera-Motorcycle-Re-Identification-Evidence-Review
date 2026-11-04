@@ -36,6 +36,7 @@ class DetectorConfig(StrictModel):
     device: str
     max_process_height: Count
     vid_stride: Count | Literal["auto"]
+    target_fps: Positive
 
 
 class StitchingConfig(StrictModel):
@@ -65,6 +66,27 @@ class CropsConfig(StrictModel):
     border_margin: Probability
     occlusion_iou: Probability
     weights: CropWeights
+    size_reference: Positive
+    sharpness_reference: Positive
+    aspect_min: Positive
+    aspect_max: Positive
+    truncated_penalty: Probability
+    occluded_penalty: Probability
+
+
+class AssociationConfig(StrictModel):
+    min_overlap: Probability
+
+
+class MotionConfig(StrictModel):
+    endpoint_boxes: Count
+    min_displacement: Probability
+
+
+class TrackQualityConfig(StrictModel):
+    reference_frames: Count
+    reference_height_px: Positive
+    weights: dict[str, Probability]
 
 
 class EmbeddingConfig(StrictModel):
@@ -204,6 +226,9 @@ class AppConfig(StrictModel):
     runtime: RuntimeConfig
     groundtruth: GroundTruthConfig
     fixture: FixtureConfig
+    rider_association: AssociationConfig
+    motion: MotionConfig
+    track_quality: TrackQualityConfig
 
     @model_validator(mode="after")
     def normalized_weights(self) -> Self:

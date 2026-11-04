@@ -11,9 +11,10 @@ dependencies = [
   "fastapi>=0.115,<1", "uvicorn[standard]>=0.30,<1",
   "pydantic>=2.9,<3", "python-multipart>=0.0.18,<1", "PyYAML>=6,<7",
   "numpy>=1.26,<3", "scipy>=1.14,<2", "scikit-learn>=1.5,<2",
-  "opencv-python-headless>=4.10,<5", "Pillow>=10.4,<13",
+  "opencv-python>=4.10,<5", "Pillow>=10.4,<13",
   "ultralytics>=8.3,<9", "transformers>=4.46,<5",
   "huggingface-hub>=0.26,<1", "safetensors>=0.4,<1",
+  "lap>=0.5.12,<1",
 ]
 
 [project.optional-dependencies]

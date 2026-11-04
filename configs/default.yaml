@@ -13,6 +13,7 @@ detector:
   device: auto                   # cuda if available else cpu
   max_process_height: 1080       # downscale input before detection
   vid_stride: auto               # 1 if fps<=15, 2 if fps<=30, else round(fps/15)
+  target_fps: 15.0
 
 tracker:
   type: botsort.yaml             # or bytetrack.yaml
@@ -25,6 +26,12 @@ tracker:
 
 crops:
   top_k: 8
+  size_reference: 0.3
+  sharpness_reference: 1000.0
+  aspect_min: 0.5
+  aspect_max: 2.5
+  truncated_penalty: 0.2
+  occluded_penalty: 0.2
   min_box_height_px: 32
   min_frame_gap: 3               # temporal diversity between chosen crops
   border_margin: 0.01            # box touching border within this margin = truncated
@@ -103,3 +110,13 @@ fixture:
   camera_b_scale: 0.8
   noise_std: 1.5
   blur_radius: 0.6
+
+rider_association:
+  min_overlap: 0.3
+motion:
+  endpoint_boxes: 3
+  min_displacement: 0.01
+track_quality:
+  reference_frames: 30
+  reference_height_px: 100
+  weights: {length: 0.2, confidence: 0.2, crop_quality: 0.25, untruncated: 0.1, unoccluded: 0.1, size: 0.15}

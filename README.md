@@ -2,7 +2,7 @@
 
 Multi-Camera Motorcycle Re-Identification & Evidence Review.
 
-**Build status: Phases 0 and 1 complete. Configuration, schemas and the synthetic fixture are available; inference and evidence review are not yet implemented.** See [PROGRESS.md](PROGRESS.md) for verified checks and blockers, and [BUILD_GUIDE.md](BUILD_GUIDE.md) for the complete specification.
+**Build status: Phases 0–2 complete. The CLI produces tracks, crops and web videos; cross-camera matching and evidence review are not yet implemented.** See [PROGRESS.md](PROGRESS.md) for verified checks and blockers, and [BUILD_GUIDE.md](BUILD_GUIDE.md) for the complete specification.
 
 ## Stack
 
@@ -82,7 +82,7 @@ docker compose run --rm --no-deps --volume "${PWD}:/workspace" --workdir /worksp
 This creates two 60-second H.264 videos, normalized GT CSVs and evaluation metadata.
 Existing fixture outputs are never overwritten: choose a new output directory to regenerate.
 There are 9 shared identities, 3 A-only identities, 2 B-only identities and 2 lookalike pairs.
-Camera B has smaller sprites, a colour shift, blur and noise. Physical transit is 8–15 seconds;
+Camera B has smaller sprites, a colour shift, blur and noise. Physical transit is 8â€“15 seconds;
 the preset adds 4 seconds to B's camera timestamps. Metadata records truth for evaluation,
 not as input to matching or clock estimation. The fixture uses full rider-and-bike rectangles;
 it does not yet provide separate person detections.
@@ -104,3 +104,18 @@ verified with ffprobe. The frontend mirrors the backend contracts in `src/types.
 ### Storage policy
 
 Do not commit recordings, model weights, generated run data, or secrets. Only explicitly attributed demo media under `samples/` may be committed. No paid API credentials are required.
+
+
+### Track and crop pipeline (Phase 2)
+
+Run `python scripts/run_pipeline.py --preset dev_fixture --fragment-prob 0.2`.
+It writes a new directory under `data/user/runs/` containing `tracks_A.json`,
+`tracks_B.json`, JPEG crops, browser-safe MP4s and `pipeline.json` with timings,
+quality scores, dropped counts and detector provenance. Use `--out` for a specific
+new directory. Existing runs are never overwritten.
+
+Real detection uses locally provisioned YOLO weights only and falls back to the
+configured second local model on failure. Runtime downloads and automatic tracker
+dependency installation are disabled. Run the optional real-video test using
+`MOTO_TEST_WEIGHTS` and `MOTO_TEST_VIDEO`; it skips when local assets are missing.
+All `.env` and `.env.*` files are excluded from version control.
