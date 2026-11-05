@@ -1,0 +1,389 @@
+{
+  "source_run": "data/user/runs/vntraffic-gpu",
+  "device": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "modes": {
+    "uncached": {
+      "seconds": 76.6103535680013,
+      "pairs": 30,
+      "cache_capacity": 0,
+      "cached_crops": 0,
+      "peak_cuda_allocated_bytes": 1743222272
+    },
+    "cached": {
+      "seconds": 27.727685195997765,
+      "pairs": 30,
+      "cache_capacity": 128,
+      "cached_crops": 59,
+      "peak_cuda_allocated_bytes": 1743222272
+    }
+  },
+  "identical_geometry": true,
+  "speedup": 2.762955256685448,
+  "geometry": {
+    "uncached": [
+      {
+        "inliers": 40,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 20,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 7,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      }
+    ],
+    "cached": [
+      {
+        "inliers": 40,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 20,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 7,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      },
+      {
+        "inliers": 0,
+        "extracted": true,
+        "backend": "lightglue",
+        "note": null
+      }
+    ]
+  },
+  "identical_previews": true
+}

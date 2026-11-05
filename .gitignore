@@ -17,3 +17,6 @@ dist/
 !samples/**/*.mp4
 coverage/
 .coverage
+
+# Machine-local Docker hardware/image selection
+/compose.override.yaml

@@ -157,6 +157,7 @@ class MatchingConfig(StrictModel):
 
 
 class KeypointConfig(StrictModel):
+    cache_crops: Annotated[int, Field(ge=0)] = 128
     ratio: Probability
     ransac_px: Positive
     ransac_confidence: Probability

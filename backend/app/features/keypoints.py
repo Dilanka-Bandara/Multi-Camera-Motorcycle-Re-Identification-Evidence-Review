@@ -1,5 +1,6 @@
 """Offline local feature matching and RANSAC geometry on vehicle crops."""
 
+from collections import OrderedDict
 from dataclasses import dataclass
 from itertools import product
 from pathlib import Path
@@ -25,9 +26,19 @@ class Geometry:
     path: str | None
 
 
+@dataclass
+class CachedCrop:
+    """Immutable crop pixels and reusable features held in CPU memory."""
+
+    image: Image
+    learned: dict[str, Any] | None = None
+    sift: tuple[Any, Any] | None = None
+
+
 class Keypoints:
     def __init__(self, cfg: KeypointConfig, device: str = "cpu") -> None:
         self.cfg = cfg
+        self.cache: OrderedDict[Path, CachedCrop] = OrderedDict()
         self.device = "cpu"
         self.sift = cv2.SIFT_create(nfeatures=cfg.max_keypoints)
         self.extractor: Any = None
@@ -58,23 +69,55 @@ class Keypoints:
         """Release learned models before the next pipeline job."""
         self.extractor = None
         self.matcher = None
+        self.cache.clear()
         if self.device.startswith("cuda"):
             import torch
 
             torch.cuda.empty_cache()
 
-    def _points(self, a: Image, b: Image) -> tuple[Points, Points, bool]:
+    def _crop(self, path: Path) -> CachedCrop:
+        """Read each immutable run crop once while it remains in the bounded cache."""
+        if path in self.cache:
+            self.cache.move_to_end(path)
+            return self.cache[path]
+        pixels = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE)
+        if pixels is None:
+            raise ValueError("Cannot read selected vehicle crop")
+        crop = CachedCrop(pixels)
+        if self.cfg.cache_crops:
+            self.cache[path] = crop
+            if len(self.cache) > self.cfg.cache_crops:
+                self.cache.popitem(last=False)
+        return crop
+
+    def _learned(self, crop: CachedCrop) -> dict[str, Any]:
+        """Reuse ALIKED output without retaining a growing CUDA cache."""
+        import torch
+
+        if crop.learned is not None:
+            return {k: v.to(self.device) for k, v in crop.learned.items()}
+        features = self.extractor.extract(
+            torch.from_numpy(crop.image).float().to(self.device)[None] / 255
+        )
+        if self.cfg.cache_crops:
+            crop.learned = {k: v.detach().cpu() for k, v in features.items()}
+        return features
+
+    def _sift(self, crop: CachedCrop) -> tuple[Any, Any]:
+        if crop.sift is None:
+            features = self.sift.detectAndCompute(crop.image, None)
+            if self.cfg.cache_crops:
+                crop.sift = features
+            return features
+        return crop.sift
+
+    def _points(self, a: CachedCrop, b: CachedCrop) -> tuple[Points, Points, bool]:
         if self.matcher is not None:
             import torch
 
             try:
                 with torch.inference_mode():
-                    x, y = (
-                        self.extractor.extract(
-                            torch.from_numpy(v).float().to(self.device)[None] / 255
-                        )
-                        for v in (a, b)
-                    )
+                    x, y = (self._learned(v) for v in (a, b))
                     pairs = self.matcher({"image0": x, "image1": y})["matches"][0]
                     return (
                         x["keypoints"][0, pairs[:, 0]].cpu().numpy(),
@@ -84,8 +127,8 @@ class Keypoints:
             except (RuntimeError, ValueError, IndexError) as exc:
                 self.close()
                 self.note = f"SIFT fallback during inference ({type(exc).__name__})"
-        ka, da = self.sift.detectAndCompute(a, None)
-        kb, db = self.sift.detectAndCompute(b, None)
+        ka, da = self._sift(a)
+        kb, db = self._sift(b)
         empty = np.empty((0, 2), dtype=np.float32)
         if da is None or db is None:
             return empty, empty, False
@@ -110,10 +153,9 @@ class Keypoints:
         output = Path("keypoints") / f"{pair_id}.png"
         backend = "sift"
         for x, y in pairs[: self.cfg.pairs_to_check]:
-            a, b = (cv2.imread(str(root / c.path_vehicle), cv2.IMREAD_GRAYSCALE) for c in (x, y))
-            if a is None or b is None:
-                raise ValueError("Cannot read selected vehicle crop")
-            p, q, available = self._points(a, b)
+            crop_a, crop_b = (self._crop(root / c.path_vehicle) for c in (x, y))
+            p, q, available = self._points(crop_a, crop_b)
+            a, b = crop_a.image, crop_b.image
             extracted |= available
             mask = np.zeros(len(p), dtype=bool)
             if len(p) >= 8:  # Eight-point fundamental matrix.

@@ -94,6 +94,7 @@ verifier:
   quality_support: 0.6
   min_crops: 3
   keypoints:
+    cache_crops: 128             # per-run CPU cache; 0 disables reuse
     ratio: 0.75
     ransac_px: 1.5
     ransac_confidence: 0.99

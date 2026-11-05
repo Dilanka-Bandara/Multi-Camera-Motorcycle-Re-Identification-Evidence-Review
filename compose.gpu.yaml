@@ -1,5 +1,8 @@
 services:
   app:
+    environment:
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
     build:
       args:
         TORCH_VARIANT: cu124

@@ -1,0 +1,41 @@
+{
+  "device": "NVIDIA RTX 3050 Laptop 4 GB",
+  "python": "3.11.18",
+  "torch": "2.6.0+cu124",
+  "previous_run": "vntraffic-gpu",
+  "current_run": "f41199b27b654a67936c38ebeca5d4ac",
+  "previous_timings_s": {
+    "ingest_A": 3.4374415590000353,
+    "detect_A": 14.156169040999998,
+    "tracks_crops_A": 6.9879040910000185,
+    "representations_A": 11.422730738000041,
+    "ingest_B": 3.1496910910000224,
+    "detect_B": 14.733190337999986,
+    "tracks_crops_B": 9.024828719000084,
+    "representations_B": 13.131624977000001,
+    "matching": 1.3610182889999578,
+    "verification": 471.0311581479999,
+    "total": 548.8044504869999
+  },
+  "current_timings_s": {
+    "ingest_A": 2.9880836160009494,
+    "detect_A": 12.43461163900065,
+    "tracks_crops_A": 6.427233006994356,
+    "representations_A": 12.014534624002408,
+    "ingest_B": 2.814462171998457,
+    "detect_B": 14.00922551700205,
+    "tracks_crops_B": 8.617936268004996,
+    "representations_B": 12.68744391600194,
+    "matching": 1.2356324520005728,
+    "verification": 76.60626107500138,
+    "total": 150.18937814200035
+  },
+  "total_speedup": 3.6540829802765336,
+  "same_reviewed_pairs": true,
+  "reviewed_pairs": 102,
+  "changed_geometry_pairs": [],
+  "tracks_A": 34,
+  "tracks_B": 46,
+  "rank1": 0.17647058823529413,
+  "caveat": "Historical full-run comparison, not a controlled CPU-versus-GPU trial. Matching/verifier thresholds and calibration were tuned between runs. Isolated cache benchmark uses identical settings and reports identical geometry."
+}

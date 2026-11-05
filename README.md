@@ -46,6 +46,30 @@ docker compose -f compose.yaml -f compose.gpu.yaml up --build
 
 The build provisions YOLO26s, YOLO11s, DINOv2-small, ALIKED and LightGlue and generates the development fixture. User runs live on the mounted data volume. Use the development fixture for deterministic CPU evaluation with ground-truth tracks, dummy appearance embeddings and SIFT geometry.
 
+On this development machine, an ignored `compose.override.yaml` selects the GPU image and NVIDIA
+device reservation automatically, so `docker compose up -d --no-build` retains GPU operation.
+Other fresh clones still default to CPU; use the two-file GPU command above there.
+`/api/health` reports `device: cuda` when the container sees the GPU. Real-video stages select CUDA
+automatically; the development fixture deliberately retains its CPU/dummy configuration.
+
+The verifier caches up to `verifier.keypoints.cache_crops` crops and extracted features per run
+(default 128, set 0 to disable). Cached arrays/features stay in CPU memory and are released after
+each run. Resolution, keypoint limits and verification checks are unchanged. The GPU Compose
+configuration sets OMP/MKL thread counts to 2, matching the validated workload.
+
+On the RTX 3050, a controlled 30-pair cache comparison took 76.61 s uncached versus 27.73 s cached
+(2.76×), with identical geometry and peak allocated CUDA memory of 1,743,222,272 bytes in both modes.
+The full VnTraffic app job completed in 150.19 s versus the historical GPU run's 548.80 s (3.65×).
+All 102 reviewed pairs retained their geometry, and Rank-1 stayed 3/17. This historical comparison
+is not a CPU-versus-GPU benchmark; calibration/threshold tuning occurred between the full runs.
+See [controlled benchmark](reports/gpu_keypoint_cache_benchmark.json) and
+[full-run timing report](reports/gpu_full_run_speed.json). Reproduce the controlled comparison with:
+
+```sh
+python scripts/benchmark_keypoints.py --run data/user/runs/vntraffic-gpu \
+  --out data/checks/keypoint-benchmark-next
+```
+
 ## Checks
 
 ```sh
