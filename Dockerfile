@@ -24,9 +24,11 @@ ENV MOTO_CONFIG_DIR=/app/configs
 RUN python -m app.models_download
 RUN python /app/scripts/make_dev_fixture.py --out /app/data/fixtures/dev
 COPY --from=frontend /frontend/dist /app/static
-RUN useradd --create-home --uid 10001 moto && install -d -o moto -g moto /app/data/user
+RUN useradd --create-home --uid 10001 moto && install -d -o moto -g moto /app/data/user \
+    && chmod 0644 /app/models/dinov2-small/model.safetensors
 ENV HF_HUB_OFFLINE=1
 USER moto
+RUN python -c "from transformers import AutoModel; AutoModel.from_pretrained('/app/models/dinov2-small', local_files_only=True)"
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s CMD curl --fail http://localhost:8080/api/health || exit 1
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
