@@ -144,3 +144,9 @@ Design issue to address before Phase 4: the specified clock-offset heuristic ret
 - Both rebuilt images load DINO as the unprivileged runtime user. The CPU image repeated the complete baked fixture under --network none with 12 queries and Rank-1 1.0. GPU Compose reports device=cuda.
 - Python 3.11.18/PyTorch 2.6.0+cu124 processed 368 crops on the RTX 3050 at 304,356,864 peak allocated bytes. Report: data/checks/phase8-gpu-dino.json. This verifies the earlier benchmark on the required Python runtime.
 - Full Python 3.11 suite passed 44 tests, including actual YOLO inference; Ruff passed. Localhost:8080 serves the packaged CPU image. No environment files, model weights, data or videos were committed.
+
+## 2026-11-05 — Phase 9 accepted
+
+- Added hand-computed decision/retrieval/calibration tests, quoted CSV and empty-query export coverage, and safe calibrator save/load tests. Existing tests cover crop quality/diversity, stitching gates and colour similarity.
+- Python 3.11: 44 fast tests passed in 19.73 s (three slow checks deselected); full suite 47 passed in 40.91 s. Ruff passed. One upstream Starlette/httpx deprecation warning remains.
+- Expanded README with architecture, workflow, configuration, matching/verifier design, exports, tests and explicit synthetic/real-data limitations. Verified headings, tables and the Mermaid diagram render on GitHub. Phase 10 real-data rows are explicitly pending.
