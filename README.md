@@ -145,6 +145,6 @@ docker run --rm --network none --gpus all --volume "${PWD}:/workspace" --workdir
 ```
 
 Use your existing fixture run path for `--run` and `MOTO_TEST_RUN` if different.
-The benchmark requires Python 3.11 and checks peak allocated CUDA memory below 3 GiB.
+The benchmark defaults to Python 3.11. For the approved benchmark-only Python 3.12 environment, pass `--allow-python312-benchmark`. The limit is 3 GiB peak allocated CUDA memory.
 Appearance alone does not establish identity: DINOv2 can prefer a wrong synthetic
 lookalike. Temporal matching and independent verification are subsequent phases.

@@ -1,4 +1,4 @@
-"""Measure real fixture DINOv2 peak allocated GPU memory under Python 3.11."""
+"""Measure real fixture DINOv2 peak allocated GPU memory."""
 
 import argparse
 import json
@@ -17,9 +17,11 @@ def main() -> None:
     parser.add_argument("--run", type=Path, required=True)
     parser.add_argument("--model", type=Path, default=Path("models/dinov2-small"))
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--allow-python312-benchmark", action="store_true")
     args = parser.parse_args()
-    if sys.version_info[:2] != (3, 11):
-        raise RuntimeError("Run acceptance on Python 3.11")
+    supported = {(3, 11), (3, 12)} if args.allow_python312_benchmark else {(3, 11)}
+    if sys.version_info[:2] not in supported:
+        raise RuntimeError("Use Python 3.11 or opt in to Python 3.12 for this benchmark")
     if args.out.exists():
         raise FileExistsError(args.out)
     import torch
