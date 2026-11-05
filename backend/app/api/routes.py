@@ -27,6 +27,8 @@ def routes(data: Path | None = None, models: Path | None = None) -> APIRouter:
     root = data or Path(os.getenv("MOTO_DATA_DIR", "/app/data/user"))
     jobs = Jobs(root, models or Path(os.getenv("MOTO_MODELS_DIR", "/app/models")))
     fixture = root / "fixtures" / "dev"
+    if data is None and not fixture.exists():
+        fixture = Path(os.environ.get("MOTO_FIXTURE_DIR", "/app/data/fixtures/dev"))
 
     def directory(run_id: str) -> Path:
         if not re.fullmatch(r"[a-f0-9]{32}", run_id):

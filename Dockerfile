@@ -12,16 +12,19 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg libgl1 libglib2.0-0 git curl && rm -rf /var/lib/apt/lists/*
 ARG TORCH_VARIANT=cpu
-RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/${TORCH_VARIANT}
+RUN if [ "$TORCH_VARIANT" = cu124 ]; then \
+      pip install --no-cache-dir torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124; \
+    else pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu; fi
 COPY pyproject.toml ./
 COPY backend/ ./backend/
 RUN pip install --no-cache-dir '.[keypoints]'
-RUN python -m app.models_download
 COPY configs/ /app/configs/
 COPY scripts/ /app/scripts/
 ENV MOTO_CONFIG_DIR=/app/configs
+RUN python -m app.models_download
+RUN python /app/scripts/make_dev_fixture.py --out /app/data/fixtures/dev
 COPY --from=frontend /frontend/dist /app/static
-RUN useradd --create-home --uid 10001 moto && mkdir -p /app/data/user /app/models && chown -R moto:moto /app
+RUN useradd --create-home --uid 10001 moto && install -d -o moto -g moto /app/data/user
 ENV HF_HUB_OFFLINE=1
 USER moto
 EXPOSE 8080

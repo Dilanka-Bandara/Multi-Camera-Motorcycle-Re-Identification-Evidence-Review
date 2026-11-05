@@ -28,7 +28,9 @@ def create_app(static_dir: Path | None = None, data_dir: Path | None = None) -> 
     @application.get("/api/health", response_model=HealthResponse)
     def health() -> HealthResponse:
         """Report API readiness; inference is introduced in subsequent phases."""
-        return HealthResponse()
+        import torch
+
+        return HealthResponse(device="cuda" if torch.cuda.is_available() else "cpu")
 
     if (assets / "assets").is_dir():
         application.mount("/assets", StaticFiles(directory=assets / "assets"), name="assets")

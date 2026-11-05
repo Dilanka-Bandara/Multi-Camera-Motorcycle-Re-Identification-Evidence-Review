@@ -15,5 +15,8 @@ topology:
 matching:
   # Synthetic sprites share a background and have unusually close appearance scores.
   ambiguity_margin: 0.07
+verifier:
+  keypoints:
+    backend: sift  # Deterministic CPU fixture. General runs use local ALIKED + LightGlue.
 runtime:
   data_dir: /app/data/user

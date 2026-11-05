@@ -11,9 +11,9 @@ def test_health_without_loading_models(tmp_path: Path) -> None:
     client = TestClient(create_app(tmp_path))
     response = client.get("/api/health")
     assert response.status_code == 200
-    assert response.json() == {
-        "status": "ok", "device": "not_initialized", "models_loaded": [],
-    }
+    payload = response.json()
+    assert payload["status"] == "ok" and payload["models_loaded"] == []
+    assert payload["device"] in {"cpu", "cuda"}
 
 
 def test_frontend_requires_a_real_build(tmp_path: Path) -> None:
