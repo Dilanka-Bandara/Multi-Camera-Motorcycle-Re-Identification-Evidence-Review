@@ -83,7 +83,20 @@ matching:
   ambiguity_margin: 0.05         # runner-up within this = lookalike flag
 
 verifier:
+  vehicle_support: 0.80
+  vehicle_fail: 0.55
+  rider_support: 0.75
+  rider_fail: 0.45
+  color_support_de: 12
+  color_fail_de: 30
+  direction_support: 0.5
+  direction_fail: -0.3
+  quality_support: 0.6
+  min_crops: 3
   keypoints:
+    ratio: 0.75
+    ransac_px: 1.5
+    ransac_confidence: 0.99
     backend: lightglue           # lightglue | sift
     max_keypoints: 512
     pairs_to_check: 3

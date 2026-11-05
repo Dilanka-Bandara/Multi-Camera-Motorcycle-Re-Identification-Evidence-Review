@@ -16,6 +16,7 @@ from app.pipeline.gt_detector import detect_groundtruth
 from app.pipeline.ingest import ingest_video
 from app.pipeline.motion import summarize_motion
 from app.pipeline.representation import load_representation, represent_tracks
+from app.pipeline.review import review_queries
 from app.pipeline.rider_assoc import associate_riders
 from app.pipeline.stitching import Fragment, stitch_fragments
 from app.pipeline.track_quality import score_track
@@ -178,6 +179,12 @@ def run_pipeline(
         }
         (run_dir / "candidates.json").write_text(json.dumps(output, indent=2), encoding="utf-8")
         timings["matching"] = time.perf_counter() - t0
+        t0 = time.perf_counter()
+        queries = review_queries(rows, camera_tracks, features, clock, config, run_dir)
+        (run_dir / "queries.json").write_text(
+            json.dumps([q.model_dump() for q in queries], indent=2), encoding="utf-8"
+        )
+        timings["verification"] = time.perf_counter() - t0
         metadata["state"] = "done"
     except Exception as exc:
         metadata["state"] = "failed"

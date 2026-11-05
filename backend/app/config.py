@@ -157,6 +157,9 @@ class MatchingConfig(StrictModel):
 
 
 class KeypointConfig(StrictModel):
+    ratio: Probability
+    ransac_px: Positive
+    ransac_confidence: Probability
     backend: Literal["lightglue", "sift"]
     max_keypoints: Count
     pairs_to_check: Count
@@ -165,6 +168,16 @@ class KeypointConfig(StrictModel):
 
 
 class VerifierConfig(StrictModel):
+    vehicle_support: Probability
+    vehicle_fail: Probability
+    rider_support: Probability
+    rider_fail: Probability
+    color_support_de: Positive
+    color_fail_de: Positive
+    direction_support: float
+    direction_fail: float
+    quality_support: Probability
+    min_crops: Count
     keypoints: KeypointConfig
     part_disagreement_gap: Probability
     min_track_quality: Probability
