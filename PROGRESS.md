@@ -138,3 +138,9 @@ Design issue to address before Phase 4: the specified clock-offset heuristic ret
 - Checked the actual learned keypoints path with networking disabled. ALIKED and LightGlue initialized from the baked cache and produced a geometry image, with zero inliers for the checked synthetic pair. Copied the primary YOLO weights into ignored models/ for local tests. Python 3.11 suite now passes all 44 tests, including real YOLO inference. GPU image validation remains in progress.
 
 - The fresh GPU Compose service reports device=cuda. The isolated GPU container completed the fixture, and an actual CUDA tensor operation returned 9 on the RTX 3050. A separate DINO benchmark caught root-only mode 0600 on the build-produced safetensors file in both images. Updated the Dockerfile to set mode 0644 on that model file and to load-test DINO as the final unprivileged user. Rebuilding and rerunning acceptance.
+
+## 2026-11-05 — Phase 8 accepted
+
+- Both rebuilt images load DINO as the unprivileged runtime user. The CPU image repeated the complete baked fixture under --network none with 12 queries and Rank-1 1.0. GPU Compose reports device=cuda.
+- Python 3.11.18/PyTorch 2.6.0+cu124 processed 368 crops on the RTX 3050 at 304,356,864 peak allocated bytes. Report: data/checks/phase8-gpu-dino.json. This verifies the earlier benchmark on the required Python runtime.
+- Full Python 3.11 suite passed 44 tests, including actual YOLO inference; Ruff passed. Localhost:8080 serves the packaged CPU image. No environment files, model weights, data or videos were committed.
