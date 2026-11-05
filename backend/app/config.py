@@ -118,6 +118,8 @@ class ClockConfig(StrictModel):
     search_range_s: Positive
     min_confident_pairs: Count
     confident_visual_sim: Probability
+    expected_transit_s: Annotated[float, Field(ge=0)] | None
+    kde_bandwidth_s: Positive
 
 
 class TopologyConfig(StrictModel):
@@ -148,6 +150,8 @@ class MatchingConfig(StrictModel):
     set_sim_top_m: Count
     weights: MatchWeights
     temporal_soft_tau_s: Positive
+    impossible_delta_s: float
+    keep_impossible_visual: Probability
     min_match_score: Probability
     ambiguity_margin: Probability
 

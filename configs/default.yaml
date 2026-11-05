@@ -69,12 +69,16 @@ topology:
     search_range_s: 120.0
     min_confident_pairs: 3
     confident_visual_sim: 0.80
+    expected_transit_s: null
+    kde_bandwidth_s: 2.0
 
 matching:
   top_n_candidates: 5
   set_sim_top_m: 5
   weights: {visual: 0.55, color: 0.15, temporal: 0.20, direction: 0.10}
   temporal_soft_tau_s: 10.0
+  impossible_delta_s: -2.0
+  keep_impossible_visual: 0.85
   min_match_score: 0.55          # cost of choosing "no match" in assignment
   ambiguity_margin: 0.05         # runner-up within this = lookalike flag
 

@@ -100,3 +100,9 @@ Design issue to address before Phase 4: the specified clock-offset heuristic ret
 
 - Ran the offline DINOv2 benchmark on the RTX 3050 Laptop with Python 3.12.2 (benchmark-only exception), PyTorch 2.5.1+cu121 and batch size 32. All 368 selected crops across 23 tracks produced 768-dimensional embeddings. Peak allocated CUDA memory was 304,356,864 bytes (290.3 MiB), below 3 GiB.
 - Reproduce with scripts/check_dino_gpu.py and the README arguments. Local report: data/checks/dino-gpu.json. Python 3.11 full suite: 33 passed, one optional local-YOLO-weights check skipped. Ruff passed.
+
+## 2026-11-05 — Phase 4 accepted
+
+- Implemented clock estimation with the approved travel-time prior, a diagnostic Gaussian density mode, soft transit and motion scoring, ranked candidates, Hungarian assignment with per-query dummy choices, and ambiguity/competitor flags. The CLI writes candidates.json alongside the tracks. Matching consumes tracks and representations only.
+- On the full fragmented dev fixture, nine mutual-best pairs estimated +3.567 s (truth +4 s). Rank 1 was correct for 9/9 shared queries. Two of three A-only queries chose no match. The third received a false proposal for independent verification. Both synthetic lookalike pairs were flagged in both directions of comparison within the A-to-B candidate rows. The fixture ambiguity margin is 0.07, selected on this synthetic fixture; the general preset retains 0.05.
+- Reproduce with python scripts/run_pipeline.py --preset dev_fixture --fragment-prob 0.2 --out <fresh-directory> and python -m pytest -q. Python 3.11: 36 passed, one optional YOLO skip, Ruff passed. Local CLI output: data/user/runs/phase4-accepted. Real-camera accuracy remains unevaluated.

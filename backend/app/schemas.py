@@ -165,6 +165,7 @@ class ClockOffset(StrictModel):
     mode: Literal["estimate", "fixed", "none"]
     estimated_s: float
     n_pairs_used: NonnegativeInt
+    raw_delta_mode_s: float | None = None
     reliable: bool
 
 

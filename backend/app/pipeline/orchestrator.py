@@ -9,12 +9,13 @@ from statistics import mean, median
 from typing import Any
 
 from app.config import AppConfig
+from app.matching.candidates import rank_direction
 from app.pipeline.crops import Observation, measure_observations, save_crops, select_crops
 from app.pipeline.detect_track import COCO_CLASSES, detect_track
 from app.pipeline.gt_detector import detect_groundtruth
 from app.pipeline.ingest import ingest_video
 from app.pipeline.motion import summarize_motion
-from app.pipeline.representation import represent_tracks
+from app.pipeline.representation import load_representation, represent_tracks
 from app.pipeline.rider_assoc import associate_riders
 from app.pipeline.stitching import Fragment, stitch_fragments
 from app.pipeline.track_quality import score_track
@@ -43,6 +44,7 @@ def run_pipeline(
         "detectors": {},
         "dropped_tracks": {},
     }
+    camera_tracks: dict[str, list[Track]] = {}
     target_classes = {COCO_CLASSES[name] for name in config.target.classes}
     try:
         for camera in ("A", "B"):
@@ -154,6 +156,28 @@ def run_pipeline(
                 tracks, run_dir, config, models_dir
             )
             timings[f"representations_{camera}"] = time.perf_counter() - t0
+            camera_tracks[camera] = tracks
+        t0 = time.perf_counter()
+        features = {
+            t.track_id: load_representation(run_dir / "representations" / f"{t.track_id}.npz")
+            for group in camera_tracks.values()
+            for t in group
+        }
+        a, b = camera_tracks["A"], camera_tracks["B"]
+        reverse = config.topology.direction == "B_to_A"
+        clock, rows = rank_direction(
+            b if reverse else a, a if reverse else b, features, config, reverse
+        )
+        if config.topology.direction == "both":
+            _, other = rank_direction(b, a, features, config, reverse=True, clock=clock)
+            rows.update(other)
+        metadata["clock_offset"] = clock.model_dump()
+        output = {
+            "clock_offset": metadata["clock_offset"],
+            "queries": {q: [c.model_dump() for c in row] for q, row in rows.items()},
+        }
+        (run_dir / "candidates.json").write_text(json.dumps(output, indent=2), encoding="utf-8")
+        timings["matching"] = time.perf_counter() - t0
         metadata["state"] = "done"
     except Exception as exc:
         metadata["state"] = "failed"
