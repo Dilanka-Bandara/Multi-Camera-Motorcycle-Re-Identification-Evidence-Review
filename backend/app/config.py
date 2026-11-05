@@ -231,7 +231,14 @@ class FixtureConfig(StrictModel):
         return self
 
 
+class EvaluationConfig(StrictModel):
+    min_iou: Probability
+    min_vote_fraction: Probability
+    calibration_bins: Count
+
+
 class AppConfig(StrictModel):
+    evaluation: EvaluationConfig
     target: TargetConfig
     detector: DetectorConfig
     tracker: TrackerConfig

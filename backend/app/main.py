@@ -8,6 +8,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from app.api.routes import routes
+
 
 class HealthResponse(BaseModel):
     """Report availability without loading expensive inference models."""
@@ -17,9 +19,10 @@ class HealthResponse(BaseModel):
     models_loaded: list[str] = []
 
 
-def create_app(static_dir: Path | None = None) -> FastAPI:
+def create_app(static_dir: Path | None = None, data_dir: Path | None = None) -> FastAPI:
     """Create an isolated API instance, optionally serving the Vite build."""
     application = FastAPI(title="MotoReID", version="0.1.0")
+    application.include_router(routes(data_dir))
     assets = static_dir or Path(os.environ.get("MOTO_STATIC_DIR", "frontend/dist"))
 
     @application.get("/api/health", response_model=HealthResponse)

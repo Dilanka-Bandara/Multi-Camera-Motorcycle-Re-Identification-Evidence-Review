@@ -4,11 +4,16 @@ import json
 import logging
 import time
 from collections import defaultdict
+from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean, median
 from typing import Any
 
 from app.config import AppConfig
+from app.evaluation.gt import map_truth
+from app.evaluation.metrics import evaluate
+from app.exporters import export
 from app.matching.candidates import rank_direction
 from app.pipeline.crops import Observation, measure_observations, save_crops, select_crops
 from app.pipeline.detect_track import COCO_CLASSES, detect_track
@@ -20,7 +25,7 @@ from app.pipeline.review import review_queries
 from app.pipeline.rider_assoc import associate_riders
 from app.pipeline.stitching import Fragment, stitch_fragments
 from app.pipeline.track_quality import score_track
-from app.schemas import Camera, Detection, FrameBox, Track
+from app.schemas import Camera, Detection, FrameBox, RunResult, Track
 
 LOGGER = logging.getLogger(__name__)
 
@@ -31,6 +36,7 @@ def run_pipeline(
     run_dir: Path,
     groundtruth: dict[Camera, Path] | None = None,
     models_dir: Path = Path("models"),
+    progress: Callable[[str, float], None] | None = None,
 ) -> dict[str, Any]:
     """Execute sequential camera stages; fail safely if a run directory already exists."""
     run_dir.mkdir(parents=True, exist_ok=False)
@@ -49,6 +55,8 @@ def run_pipeline(
     target_classes = {COCO_CLASSES[name] for name in config.target.classes}
     try:
         for camera in ("A", "B"):
+            if progress:
+                progress(f"ingest_{camera}", 0.05 if camera == "A" else 0.40)
             camera_config = getattr(config.cameras, camera)
             t0 = time.perf_counter()
             web = run_dir / f"camera_{camera}.mp4"
@@ -164,6 +172,8 @@ def run_pipeline(
             for group in camera_tracks.values()
             for t in group
         }
+        if progress:
+            progress("matching", 0.76)
         a, b = camera_tracks["A"], camera_tracks["B"]
         reverse = config.topology.direction == "B_to_A"
         clock, rows = rank_direction(
@@ -180,11 +190,45 @@ def run_pipeline(
         (run_dir / "candidates.json").write_text(json.dumps(output, indent=2), encoding="utf-8")
         timings["matching"] = time.perf_counter() - t0
         t0 = time.perf_counter()
+        if progress:
+            progress("verification", 0.82)
         queries = review_queries(rows, camera_tracks, features, clock, config, run_dir)
         (run_dir / "queries.json").write_text(
             json.dumps([q.model_dump() for q in queries], indent=2), encoding="utf-8"
         )
         timings["verification"] = time.perf_counter() - t0
+        if progress:
+            progress("export", 0.96)
+        metrics = None
+        if groundtruth and all(groundtruth[c].is_file() for c in ("A", "B")):
+            labels = {}
+            gallery = {}
+            for camera, group in camera_tracks.items():
+                mapped, identities = map_truth(group, groundtruth[camera], config.evaluation)
+                labels.update(mapped)
+                gallery[camera] = identities
+            metrics = evaluate(
+                queries,
+                labels,
+                gallery,
+                {t.track_id: t.camera for t in a + b},
+                config.evaluation.calibration_bins,
+            )
+            metrics.update(fps_processed=rates, wall_time_s=time.perf_counter() - started)
+        timings["total"] = time.perf_counter() - started
+        result = RunResult(
+            run_id=run_id,
+            created_at=datetime.now(UTC),
+            config_snapshot=metadata["config_snapshot"],
+            videos=metadata["videos"],
+            clock_offset=clock,
+            tracks_A=a,
+            tracks_B=b,
+            queries=queries,
+            metrics=metrics,
+            timings=timings,
+        )
+        export(result, run_dir)
         metadata["state"] = "done"
     except Exception as exc:
         metadata["state"] = "failed"
