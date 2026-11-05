@@ -16,6 +16,11 @@ class Calibrator(StrictModel):
     def load(cls, path: Path) -> "Calibrator":
         return cls.model_validate(json.loads(path.read_text(encoding="utf-8")))
 
+    def save(self, path: Path) -> None:
+        """Write coefficients to a new destination without replacing prior fits."""
+        with path.open("x", encoding="utf-8") as stream:
+            stream.write(self.model_dump_json(indent=2))
+
     def probability(self, features: dict[str, float]) -> float:
         if features.keys() != self.weights.keys():
             raise ValueError("Verifier features must match the calibration coefficients")
