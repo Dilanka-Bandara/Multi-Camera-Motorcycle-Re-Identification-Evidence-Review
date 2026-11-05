@@ -2,11 +2,11 @@
 
 Multi-Camera Motorcycle Re-Identification & Evidence Review.
 
-**Build status: Phases 0–2 complete. The CLI produces tracks, crops and web videos; cross-camera matching and evidence review are not yet implemented.** See [PROGRESS.md](PROGRESS.md) for verified checks and blockers, and [BUILD_GUIDE.md](BUILD_GUIDE.md) for the complete specification.
+The development fixture runs through tracking, cross-camera matching and independent verification. The browser workspace provides synchronized playback, evidence review, metrics, and JSON/CSV exports. Docker packaging is in validation. See [PROGRESS.md](PROGRESS.md) for measured results and [BUILD_GUIDE.md](BUILD_GUIDE.md) for acceptance criteria.
 
 ## Stack
 
-Python 3.11, FastAPI, Pydantic v2, React, TypeScript, Vite, Tailwind CSS and TanStack Query. Subsequent phases add YOLO26 with YOLO11 fallback, BoT-SORT/ByteTrack, DINOv2, OpenCV, LightGlue/ALIKED with SIFT fallback, SciPy assignment and scikit-learn calibration. Runs will use filesystem storage.
+Python 3.11, FastAPI, Pydantic v2, React, TypeScript, Vite, Tailwind CSS and TanStack Query. The pipeline uses YOLO26 with YOLO11 fallback, BoT-SORT/ByteTrack, DINOv2, OpenCV, LightGlue/ALIKED with SIFT fallback, and SciPy assignment. Each run has its own filesystem directory.
 
 ## Development
 
@@ -38,13 +38,13 @@ docker compose up --build
 
 Open http://localhost:8080. Health endpoint: http://localhost:8080/api/health.
 
-GPU configuration (inference is not implemented in Phase 0):
+For an NVIDIA CUDA host with Docker GPU passthrough:
 
 ```sh
 docker compose -f compose.yaml -f compose.gpu.yaml up --build
 ```
 
-The Docker model-download module is explicitly a Phase 0 stub. Offline inference and the baked synthetic fixture are later phase requirements, not current capabilities.
+The build provisions YOLO26s, YOLO11s, DINOv2-small, ALIKED and LightGlue and generates the development fixture. User runs live on the mounted data volume. Use the development fixture for deterministic CPU evaluation with ground-truth tracks, dummy appearance embeddings and SIFT geometry.
 
 ## Checks
 
@@ -146,5 +146,4 @@ docker run --rm --network none --gpus all --volume "${PWD}:/workspace" --workdir
 
 Use your existing fixture run path for `--run` and `MOTO_TEST_RUN` if different.
 The benchmark defaults to Python 3.11. For the approved benchmark-only Python 3.12 environment, pass `--allow-python312-benchmark`. The limit is 3 GiB peak allocated CUDA memory.
-Appearance alone does not establish identity: DINOv2 can prefer a wrong synthetic
-lookalike. Temporal matching and independent verification are subsequent phases.
+DINOv2 can prefer a wrong synthetic lookalike. In the review workspace, compare the transit time, vehicle and rider features, geometric inliers, and competing pairs before interpreting a proposal.
