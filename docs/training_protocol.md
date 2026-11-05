@@ -46,19 +46,34 @@ model or change the grid based on held-out scores. Every fit writes a manifest,
 coefficients, thresholds, split identity/query lists, and metrics to a fresh
 output directory so earlier experiments remain available.
 
-After both real-data evaluations are complete, publish the selected learned
-coefficients to `configs/calibrator.json` and the selected thresholds to the
-relevant configuration. Record the training provenance and held-out results.
-Until then the shipped coefficients remain explicitly provisional hand-set
-defaults; Phase 10 is not accepted.
+For the final fit, pool tuning pairs from RoundaboutHD and VnTraffic using
+`--additional-training RUN GT_A GT_B`. Dataset identity namespaces are separate;
+the same numeric ID in different datasets does not assert a shared vehicle.
+Fit once, then use `--coefficients PATH` for the second preset's threshold tuning
+without refitting. Both held-out query sets remain excluded from fitting and
+threshold selection. This protocol was selected before viewing RoundaboutHD's
+held-out scores; it is not a choice between models based on test performance.
+
+The fitted coefficients are now published in `configs/calibrator.json`, and
+both real-data presets contain the tuning-selected thresholds. The original
+coefficients are preserved in `reports/calibrator_handset_baseline.json`.
 
 ## Current evidence
 
-The strict VnTraffic fit (`data/user/calibration/vntraffic-v3`) has four labelled
-training pairs: two positives and two negatives. There are eight tuning queries
-and fifteen held-out queries, with eleven unmapped queries excluded. This is
-insufficient evidence for a robust calibration claim. It is a preliminary
-experiment, not the final trained model. RoundaboutHD processing is in progress.
+The final pooled fit (`data/user/calibration/pooled-v1`) has fourteen labelled
+training pairs: five positives and nine negatives. RoundaboutHD supplies ten
+pairs (three positive); VnTraffic supplies four (two positive). RoundaboutHD has
+eleven tuning queries and twenty-six held-out queries; VnTraffic has eight and
+fifteen respectively. The earlier VnTraffic-only experiments remain preserved.
+This is a small calibration sample, not evidence of robust deployment accuracy.
+
+Both tuning grids select minimum match score 0.45, ambiguity margin 0.02,
+accept probability 0.50 and reject probability 0.10. Accepted F1 stays zero,
+so these are the first tied grid settings, not demonstrated optimal thresholds.
+Held-out Rank-1 is 10/14 on RoundaboutHD and 2/12 on VnTraffic; neither has
+accepted matches. ECE is 0.164 and 0.290 respectively. Full manifests, tuning
+metrics and held-out metrics are in `reports/`. Reports replay the raw features
+from actual YOLO runs; FPS and wall time refer to those source pipeline runs.
 
 The VnTraffic baseline uses the original hand-set coefficients. Its corrected
 labelled evaluation is `reports/vntraffic_baseline_labelled_metrics.json` and
@@ -72,9 +87,16 @@ Run from the repository root in the Python 3.11 environment with `backend` on
 `PYTHONPATH`:
 
 ```sh
+python scripts/fit_calibrator.py --run data/user/runs/roundabouthd-gpu \
+  --gt-a data/user/datasets/roundabouthd_pair/gt_A.csv \
+  --gt-b data/user/datasets/roundabouthd_pair/gt_B.csv \
+  --additional-training data/user/runs/vntraffic-gpu \
+    data/user/datasets/vntraffic_synth/gt_A.csv data/user/datasets/vntraffic_synth/gt_B.csv \
+  --out data/user/calibration/pooled-next
 python scripts/fit_calibrator.py --run data/user/runs/vntraffic-gpu \
   --gt-a data/user/datasets/vntraffic_synth/gt_A.csv \
   --gt-b data/user/datasets/vntraffic_synth/gt_B.csv \
+  --coefficients data/user/calibration/pooled-next/calibrator.json \
   --out data/user/calibration/vntraffic-next
 python scripts/evaluate.py --run data/user/runs/vntraffic-gpu \
   --gt-a data/user/datasets/vntraffic_synth/gt_A.csv \

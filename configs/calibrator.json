@@ -1,8 +1,15 @@
 {
-  "intercept": -3.0,
+  "intercept": -0.7760279834255256,
   "weights": {
-    "visual": 1.1, "vehicle_part": 1.0, "rider_part": 0.7, "color_sim": 0.7,
-    "keypoint_inliers_norm": 1.1, "temporal": 1.0, "direction": 0.4,
-    "track_quality_min": 0.6, "margin": 0.8, "missing_count": -0.25
+    "visual": -0.020675062150403548,
+    "vehicle_part": 0.0247057705610481,
+    "rider_part": 0.28799362524741584,
+    "color_sim": 0.4004103396181242,
+    "keypoint_inliers_norm": 0.20806696707877353,
+    "temporal": 0.3155555254646193,
+    "direction": 0.000010388897919941616,
+    "track_quality_min": 0.015257487869130393,
+    "margin": -0.15873216102551818,
+    "missing_count": -0.15806632544148352
   }
 }

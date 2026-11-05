@@ -1,0 +1,91 @@
+{
+  "source_run": "data/user/runs/roundabouthd-gpu",
+  "training_sources": [
+    {
+      "run": "data/user/runs/roundabouthd-gpu",
+      "pairs": 10,
+      "positives": 3
+    },
+    {
+      "run": "data/user/runs/vntraffic-gpu",
+      "pairs": 4,
+      "positives": 2
+    }
+  ],
+  "frozen_coefficients_source": null,
+  "method": "scikit-learn LogisticRegression; pretrained neural weights unchanged",
+  "split": "SHA-256 identity parity; both training-pair identities must be tuning",
+  "training_pairs": 14,
+  "training_positives": 5,
+  "training_negatives": 9,
+  "tuning_identity_ids": [
+    "2",
+    "431",
+    "436",
+    "439",
+    "643",
+    "648",
+    "86"
+  ],
+  "held_out_identity_ids": [
+    "3",
+    "432",
+    "433",
+    "434",
+    "435",
+    "437",
+    "438",
+    "440",
+    "642",
+    "645",
+    "646",
+    "649",
+    "682",
+    "83",
+    "87"
+  ],
+  "feature_names": [
+    "visual",
+    "vehicle_part",
+    "rider_part",
+    "color_sim",
+    "keypoint_inliers_norm",
+    "temporal",
+    "direction",
+    "track_quality_min",
+    "margin",
+    "missing_count"
+  ],
+  "settings": {
+    "seed": 42,
+    "regularization": 1.0,
+    "max_iterations": 2000,
+    "min_match_scores": [
+      0.45,
+      0.55,
+      0.65,
+      0.75,
+      0.85,
+      0.9
+    ],
+    "ambiguity_margins": [
+      0.02,
+      0.05,
+      0.08
+    ],
+    "accept_probabilities": [
+      0.5,
+      0.65,
+      0.75,
+      0.85
+    ],
+    "reject_probabilities": [
+      0.1,
+      0.25,
+      0.35
+    ]
+  },
+  "threshold_objective": "accepted F1, then precision; tuning queries only",
+  "assignment_scope": "independently within each query split",
+  "pretrained_models_finetuned": false
+}

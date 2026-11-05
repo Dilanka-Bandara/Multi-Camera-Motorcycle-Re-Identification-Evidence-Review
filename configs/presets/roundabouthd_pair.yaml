@@ -1,0 +1,23 @@
+inputs:
+  directory: user/datasets/roundabouthd_pair
+target:
+  classes:
+  - car
+  - motorcycle
+  - bus
+  - truck
+detector:
+  mode: yolo
+topology:
+  direction: both
+  min_transit_s: 22.068000000000005
+  max_transit_s: 35.592
+  clock_offset:
+    mode: fixed
+    fixed_s: 0
+matching:
+  ambiguity_margin: 0.02
+  min_match_score: 0.45
+verifier:
+  p_accept: 0.5
+  p_reject: 0.1

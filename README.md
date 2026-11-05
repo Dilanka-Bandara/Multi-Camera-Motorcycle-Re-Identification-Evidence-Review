@@ -203,8 +203,8 @@ timing cannot win assignment, even when a visually similar candidate is retained
 
 The verifier recomputes evidence from crop features, timestamps, motion and geometry. It applies
 critical timing rejection before probability thresholds. High-severity contradictions and ambiguity
-prevent acceptance. Coefficients in configs/calibrator.json are hand-set pending held-out real-data
-calibration.
+prevent acceptance. Coefficients in configs/calibrator.json are fitted from fourteen tuning pairs
+using logistic regression. Their small training sample limits probabilistic interpretation.
 
 ## Export format
 
@@ -235,19 +235,49 @@ Run it with docker exec against an image started with --network none.
 
 ## Evaluation and limitations
 
-| Dataset | Retrieval Rank-1 | Correct rejection | ECE | Evaluation status |
-|---|---|---|---|---|
-| Development fixture | 1.00 | 1.00 | 0.602 | Nine shared queries, three unmatched queries; true pairs uncertain |
-| VnTraffic synthetic pair | Pending | Pending | Pending | Phase 10 |
-| RoundaboutHD | Pending | Pending | Pending | Phase 10 |
+| Dataset / evaluation | Accepted precision | Recall | F1 | Rank-1 | Correct rejection | False accepted | ECE | Detection FPS A/B | Hardware |
+|---|---|---|---|---|---|---|---|---|---|
+| Development fixture, full regression | N/A | 0 | 0 | 1.00 (9/9) | 1.00 (3/3) | 0 | 0.261 | N/A (GT detector) | Ryzen 7 5800H CPU |
+| VnTraffic synthetic, motorcycle detector, held-out | N/A | 0 | 0 | 0.167 (2/12) | 1.00 (3/3) | 0 | 0.290 | 18.01 / 17.24 | RTX 3050 Laptop 4 GB |
+| RoundaboutHD cameras 1/2, all vehicles, held-out | N/A | 0 | 0 | 0.714 (10/14) | 1.00 (12/12) | 0 | 0.164 | 19.03 / 29.11 | RTX 3050 Laptop 4 GB |
+| RoundaboutHD motorcycle subset | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Class mapping unverified |
+
+No matches were accepted, so precision is undefined rather than 100%. Correct rejection permits
+uncertain outcomes, as required by the guide. RoundaboutHD's statistics workbook has no
+motorcycle-labelled rows, but its local SCT IDs are not assumed to be global IDs. VnTraffic's GT
+has no classes; its row evaluates motorcycle-detector tracks against available identity boxes.
+Fifty-four RoundaboutHD and eleven VnTraffic queries could not be mapped to GT and are excluded.
+See [RoundaboutHD held-out metrics](reports/roundabouthd_pair_held_out_metrics.md),
+[VnTraffic held-out metrics](reports/vntraffic_synth_held_out_metrics.md),
+[fixture metrics](reports/dev_fixture_calibrated_metrics.md), and
+[three screenshot-backed near-misses](docs/near_misses.md).
+
+Real-data evaluation replays frozen raw verifier features with learned coefficients and tuned
+thresholds. Assignment is recomputed within each query split. The displayed FPS comes from the
+actual source YOLO pipelines, whose total wall times were 530.1 s (RoundaboutHD, two 60 s clips)
+and 548.8 s (VnTraffic, 17 s A and 35 s B including blank delay). These are detection throughput,
+not end-to-end real-time claims. The fixture rerun with fitted coefficients took 17.3 s.
 
 The fixture has limited viewpoint variation and no separate rider annotations. Its detector uses
-ground truth and its appearance encoder is deterministic. Real-camera performance is pending.
+ground truth and its appearance encoder is deterministic. Real-data estimates use small held-out splits.
 DINOv2 has no motorcycle-specific training here. Small vehicles lose detail when 4K footage is
 downscaled. Rider posture and passenger changes can contradict vehicle similarity. A missing rider
-or weak geometry contributes uncertainty. Current confidence values require calibration before
-probabilistic interpretation.
+or weak geometry contributes uncertainty. Fourteen calibration pairs are insufficient to establish
+reliable confidence probabilities across cameras or deployment conditions.
 
 GPU validation used an RTX 3050 Laptop 4 GB, Python 3.11.18 and PyTorch 2.6.0+cu124. DINO processed
 368 crops with batch size 32 at 290.3 MiB peak allocated memory. This measurement excludes driver
 reservation and other GPU processes.
+
+Phase 10 training follows [the documented protocol](docs/training_protocol.md): fit logistic
+verifier calibration, tune the four specified thresholds on tuning queries, then report held-out
+results. Neural model weights stay pretrained. The pooled fit has five positive and nine negative
+training pairs; its coefficients and per-preset thresholds are saved in configs/. The
+[labelled baseline report](reports/vntraffic_baseline_labelled_metrics.md) excludes eleven unmapped
+queries. It describes all labelled baseline queries, not held-out trained-model performance.
+
+VnTraffic samples derive from [Thi-Nhung Le and contributors' Vehicle Tracking Dataset](https://zenodo.org/records/18195750),
+CC BY 4.0, with source video credited by its authors to HTV, Hanoi Radio and Television Station.
+See [sample attribution and modifications](samples/vntraffic_synth/README.md). Its supplied source
+lasts 17 seconds and supplies identity boxes without vehicle-class labels. The synthetic pair
+therefore cannot provide 60 seconds of distinct source footage or independent viewpoints.

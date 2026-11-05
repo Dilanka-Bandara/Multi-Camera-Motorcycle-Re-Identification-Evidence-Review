@@ -1,0 +1,37 @@
+{
+  "decisions": {
+    "accepted": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 20,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "accepted_or_uncertain": {
+      "tp": 7,
+      "fp": 7,
+      "fn": 13,
+      "precision": 0.5,
+      "recall": 0.35,
+      "f1": 0.4117647058823529
+    }
+  },
+  "rank1": 0.6,
+  "rank5": 0.7,
+  "correct_rejection_rate": 1.0,
+  "false_matches": [],
+  "roc_auc": 0.6846153846153846,
+  "expected_calibration_error": 0.41575194752026906,
+  "queries_with_match": 20,
+  "queries_without_match": 17,
+  "excluded_unmapped_queries": 54,
+  "excluded_unmapped_calibration_pairs": 22,
+  "fps_processed": {
+    "detect_A": 19.031555525809793,
+    "tracks_crops_A": 63.718218454693414,
+    "detect_B": 29.10507337461807,
+    "tracks_crops_B": 93.97284997688662
+  },
+  "wall_time_s": 530.0971175699997
+}

@@ -1,0 +1,70 @@
+{
+  "decisions": {
+    "accepted": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 12,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "accepted_or_uncertain": {
+      "tp": 2,
+      "fp": 13,
+      "fn": 10,
+      "precision": 0.13333333333333333,
+      "recall": 0.16666666666666666,
+      "f1": 0.14814814814814814
+    }
+  },
+  "rank1": 0.16666666666666666,
+  "rank5": 0.16666666666666666,
+  "correct_rejection_rate": 1.0,
+  "false_matches": [],
+  "roc_auc": 0.8627450980392157,
+  "expected_calibration_error": 0.2904902258474349,
+  "queries_with_match": 12,
+  "queries_without_match": 3,
+  "excluded_unmapped_queries": 11,
+  "excluded_unmapped_calibration_pairs": 8,
+  "query_ids": [
+    "A-0000",
+    "A-0004",
+    "A-0005",
+    "A-0006",
+    "A-0007",
+    "A-0014",
+    "A-0015",
+    "A-0016",
+    "A-0019",
+    "A-0022",
+    "A-0023",
+    "A-0027",
+    "A-0039",
+    "A-0040",
+    "A-0042"
+  ],
+  "identity_ids": [
+    "17",
+    "23",
+    "33",
+    "37",
+    "39",
+    "44",
+    "45",
+    "51",
+    "53",
+    "54",
+    "65"
+  ],
+  "calibration": "logistic regression, identity-separated SHA-256 split",
+  "hardware": "NVIDIA RTX 3050 Laptop 4 GB; Python 3.11.18; PyTorch 2.6.0+cu124",
+  "fps_processed": {
+    "detect_A": 18.01334805069456,
+    "tracks_crops_A": 72.98325697641557,
+    "detect_B": 17.239986328343342,
+    "tracks_crops_B": 116.34569837202804
+  },
+  "source_pipeline_wall_time_s": 548.804448333,
+  "evaluation_method": "Frozen raw verifier features replayed with fitted calibration and tuning-only thresholds; assignment within query partition"
+}

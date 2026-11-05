@@ -6,17 +6,20 @@ from pathlib import Path
 
 import pytest
 
+from app.config import load_config
 from app.evaluation.metrics import evaluate
 from app.exporters import export
 from app.schemas import (
     Candidate,
     CandidateScores,
     ClockOffset,
+    EvidenceItem,
     QueryResult,
     RunResult,
     Verification,
 )
 from app.verify.calibrator import Calibrator
+from scripts.fit_calibrator import reviewed_queries
 
 
 def query(name: str, target: str, status: str, confidence: float) -> QueryResult:
@@ -93,6 +96,28 @@ def test_unmapped_tracks_are_not_labelled_calibration_negatives() -> None:
     assert result["expected_calibration_error"] is None
     assert result["decisions"]["accepted"]["fp"] == 0
     assert result["rank1"] == 0
+
+
+def test_calibration_replay_removes_out_of_split_conflict() -> None:
+    row = query("a1", "b1", "uncertain", 0.8)
+    verification = row.candidates[0].verification
+    verification.features = {"margin": 0.2, "track_quality_min": 1}
+    verification.evidence = [
+        EvidenceItem(
+            check="assignment_conflict",
+            polarity="contradicts",
+            severity="high",
+            value=None,
+            threshold=None,
+            message="another query has a stronger claim",
+        )
+    ]
+    replay = reviewed_queries(
+        [row], Calibrator(intercept=3, weights={"margin": 0, "track_quality_min": 0}), load_config()
+    )
+    assert replay[0].outcome == "matched"
+    assert replay[0].candidates[0].verification.evidence == []
+    assert verification.evidence[0].check == "assignment_conflict"
 
 
 def test_csv_quotes_and_empty_query_roundtrip(tmp_path: Path) -> None:

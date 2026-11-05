@@ -1,0 +1,60 @@
+{
+  "decisions": {
+    "accepted": {
+      "tp": 0,
+      "fp": 0,
+      "fn": 5,
+      "precision": null,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "accepted_or_uncertain": {
+      "tp": 1,
+      "fp": 7,
+      "fn": 4,
+      "precision": 0.125,
+      "recall": 0.2,
+      "f1": 0.15384615384615385
+    }
+  },
+  "rank1": 0.2,
+  "rank5": 0.4,
+  "correct_rejection_rate": 1.0,
+  "false_matches": [],
+  "roc_auc": 0.631578947368421,
+  "expected_calibration_error": 0.28867665487006605,
+  "queries_with_match": 5,
+  "queries_without_match": 3,
+  "excluded_unmapped_queries": 11,
+  "excluded_unmapped_calibration_pairs": 3,
+  "query_ids": [
+    "A-0001",
+    "A-0012",
+    "A-0017",
+    "A-0020",
+    "A-0025",
+    "A-0026",
+    "A-0030",
+    "A-0041"
+  ],
+  "identity_ids": [
+    "26",
+    "29",
+    "46",
+    "49",
+    "59",
+    "64",
+    "69",
+    "80"
+  ],
+  "calibration": "logistic regression, identity-separated SHA-256 split",
+  "hardware": "NVIDIA RTX 3050 Laptop 4 GB; Python 3.11.18; PyTorch 2.6.0+cu124",
+  "fps_processed": {
+    "detect_A": 18.01334805069456,
+    "tracks_crops_A": 72.98325697641557,
+    "detect_B": 17.239986328343342,
+    "tracks_crops_B": 116.34569837202804
+  },
+  "source_pipeline_wall_time_s": 548.804448333,
+  "evaluation_method": "Frozen raw verifier features replayed with fitted calibration and tuning-only thresholds; assignment within query partition"
+}

@@ -15,3 +15,9 @@ topology:
   clock_offset:
     mode: fixed
     fixed_s: 6.0
+matching:
+  ambiguity_margin: 0.02
+  min_match_score: 0.45
+verifier:
+  p_accept: 0.5
+  p_reject: 0.1

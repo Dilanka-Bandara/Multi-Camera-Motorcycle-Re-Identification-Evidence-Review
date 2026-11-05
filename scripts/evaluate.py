@@ -19,6 +19,10 @@ def main() -> None:
     args = parser.parse_args()
     root = args.run if args.run.is_dir() else Path("data/user/runs") / args.run
     result = RunResult.model_validate_json((root / "results.json").read_bytes())
+    if args.out is None:
+        config = AppConfig.model_validate(result.config_snapshot)
+        preset = Path(config.inputs.directory).name if config.inputs else "dev_fixture"
+        args.out = Path("reports") / f"{preset}_metrics.json"
     if bool(args.gt_a) != bool(args.gt_b):
         parser.error("Provide both --gt-a and --gt-b")
     if args.gt_a:
