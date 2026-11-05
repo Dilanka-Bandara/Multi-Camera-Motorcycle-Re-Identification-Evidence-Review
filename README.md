@@ -242,11 +242,14 @@ Run it with docker exec against an image started with --network none.
 | RoundaboutHD cameras 1/2, all vehicles, held-out | N/A | 0 | 0 | 0.714 (10/14) | 1.00 (12/12) | 0 | 0.164 | 19.03 / 29.11 | RTX 3050 Laptop 4 GB |
 | RoundaboutHD motorcycle subset | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Class mapping unverified |
 
-No matches were accepted, so precision is undefined rather than 100%. Correct rejection permits
+No GT-mapped held-out queries were accepted, so precision is undefined rather than 100%. Correct rejection permits
 uncertain outcomes, as required by the guide. RoundaboutHD's statistics workbook has no
 motorcycle-labelled rows, but its local SCT IDs are not assumed to be global IDs. VnTraffic's GT
 has no classes; its row evaluates motorcycle-detector tracks against available identity boxes.
 Fifty-four RoundaboutHD and eleven VnTraffic queries could not be mapped to GT and are excluded.
+The original RoundaboutHD baseline has one accepted unmapped query (A-0002 to B-0052);
+its correctness is unknown and it is not counted as either a true or false accepted match.
+Candidate-level verdicts can also differ from the query's final assigned outcome.
 See [RoundaboutHD held-out metrics](reports/roundabouthd_pair_held_out_metrics.md),
 [VnTraffic held-out metrics](reports/vntraffic_synth_held_out_metrics.md),
 [fixture metrics](reports/dev_fixture_calibrated_metrics.md), and
@@ -264,6 +267,8 @@ DINOv2 has no motorcycle-specific training here. Small vehicles lose detail when
 downscaled. Rider posture and passenger changes can contradict vehicle similarity. A missing rider
 or weak geometry contributes uncertainty. Fourteen calibration pairs are insufficient to establish
 reliable confidence probabilities across cameras or deployment conditions.
+The transit model assumes non-overlapping journeys; simultaneous visibility or parked vehicles
+in overlapping views can trigger timing contradictions even with strong geometric agreement.
 
 GPU validation used an RTX 3050 Laptop 4 GB, Python 3.11.18 and PyTorch 2.6.0+cu124. DINO processed
 368 crops with batch size 32 at 290.3 MiB peak allocated memory. This measurement excludes driver
@@ -281,3 +286,20 @@ CC BY 4.0, with source video credited by its authors to HTV, Hanoi Radio and Tel
 See [sample attribution and modifications](samples/vntraffic_synth/README.md). Its supplied source
 lasts 17 seconds and supplies identity boxes without vehicle-class labels. The synthetic pair
 therefore cannot provide 60 seconds of distinct source footage or independent viewpoints.
+
+## Credits and licenses
+
+| Component | Upstream license / source |
+|---|---|
+| Ultralytics YOLO | [AGPL-3.0](https://github.com/ultralytics/ultralytics/blob/main/LICENSE) |
+| DINOv2 | [Apache-2.0](https://github.com/facebookresearch/dinov2/blob/main/LICENSE) |
+| LightGlue | [Apache-2.0](https://github.com/cvg/LightGlue/blob/main/LICENSE) |
+| ALIKED | [BSD-3-Clause](https://github.com/Shiaoming/ALIKED/blob/main/LICENSE) |
+| VnTraffic | [CC BY 4.0 dataset record](https://zenodo.org/records/18195750); attribution above |
+| RoundaboutHD | [Authors' dataset card](https://huggingface.co/datasets/yl4300/RoundaboutHD); no license declaration found in the inspected card/archive README |
+
+RoundaboutHD raw videos and annotations remain local and are not redistributed in this repository.
+See [the 4:20 demo script](docs/demo_script.md) for the presentation sequence and measured limitations.
+The completed local captioned demo is `data/demo/render-v2/moto-reid-demo.mp4` (not committed).
+See [final validation and remaining limits](docs/final_checks.md) for the fresh-clone/offline check,
+test timings, demo verification and artifact locations.
