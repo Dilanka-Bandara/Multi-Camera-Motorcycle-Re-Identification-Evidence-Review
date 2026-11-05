@@ -78,6 +78,23 @@ def test_metrics_hand_calculation() -> None:
     assert evaluate([], {}, {"A": set(), "B": set()}, {}, 10)["rank1"] is None
 
 
+def test_unmapped_tracks_are_not_labelled_calibration_negatives() -> None:
+    rows = [query("unknown", "b1", "accepted", 0.9), query("a1", "unknown_b", "uncertain", 0.8)]
+    result = evaluate(
+        rows,
+        {"a1": "one", "b1": "one"},
+        {"A": {"one"}, "B": {"one"}},
+        {"unknown": "A", "a1": "A"},
+        10,
+    )
+    assert result["excluded_unmapped_queries"] == 1
+    assert result["excluded_unmapped_calibration_pairs"] == 1
+    assert result["queries_without_match"] == 0
+    assert result["expected_calibration_error"] is None
+    assert result["decisions"]["accepted"]["fp"] == 0
+    assert result["rank1"] == 0
+
+
 def test_csv_quotes_and_empty_query_roundtrip(tmp_path: Path) -> None:
     rows = [
         query("A", "B", "accepted", 0.9),

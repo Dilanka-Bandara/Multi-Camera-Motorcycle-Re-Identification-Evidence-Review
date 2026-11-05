@@ -1,7 +1,17 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "./api";
 import type { RunStatus } from "./types";
+
+interface PresetSettings {
+  target: { classes: string[] };
+  topology: {
+    direction: string;
+    min_transit_s: number;
+    max_transit_s: number;
+    clock_offset: { mode: string; fixed_s: number };
+  };
+}
 
 export function Home() {
   const presets = useQuery({
@@ -14,6 +24,20 @@ export function Home() {
     refetchInterval: 5000,
   });
   const [source, setSource] = useState("preset");
+  const [preset, setPreset] = useState("dev_fixture");
+  const settings = useQuery({
+    queryKey: ["preset-settings", preset],
+    enabled: source === "preset" && Boolean(presets.data?.includes(preset)),
+    queryFn: () => api<PresetSettings>("/api/presets/" + preset),
+  });
+  const defaults = source === "preset" ? settings.data : undefined;
+  useEffect(() => {
+    if (presets.data?.length && !presets.data.includes(preset))
+      setPreset(presets.data[0]);
+  }, [presets.data, preset]);
+  useEffect(() => {
+    setClock(defaults?.topology.clock_offset.mode ?? "estimate");
+  }, [defaults]);
   const [clock, setClock] = useState("estimate");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -90,7 +114,12 @@ export function Home() {
               {source === "preset" ? (
                 <label>
                   Preset
-                  <select name="preset" required>
+                  <select
+                    name="preset"
+                    required
+                    value={preset}
+                    onChange={(e) => setPreset(e.target.value)}
+                  >
                     {(presets.data ?? []).map((p) => (
                       <option key={p} value={p}>
                         {p === "dev_fixture" ? "Development fixture" : p}
@@ -119,19 +148,29 @@ export function Home() {
                 </div>
               )}
             </fieldset>
-            <fieldset>
+            <fieldset key={source + JSON.stringify(defaults)}>
               <legend>Matching settings</legend>
               <div className="fields">
                 <label>
                   Target
-                  <select name="target">
+                  <select
+                    name="target"
+                    defaultValue={
+                      (defaults?.target.classes.length ?? 1) > 1
+                        ? "all"
+                        : "motorcycle"
+                    }
+                  >
                     <option value="motorcycle">Motorcycles</option>
                     <option value="all">All vehicles</option>
                   </select>
                 </label>
                 <label>
                   Direction
-                  <select name="direction">
+                  <select
+                    name="direction"
+                    defaultValue={defaults?.topology.direction ?? "A_to_B"}
+                  >
                     <option value="A_to_B">A → B</option>
                     <option value="B_to_A">B → A</option>
                     <option value="both">Both</option>
@@ -145,7 +184,7 @@ export function Home() {
                     type="number"
                     step="any"
                     min="0"
-                    defaultValue={5}
+                    defaultValue={defaults?.topology.min_transit_s ?? 5}
                   />
                 </label>
                 <label>
@@ -157,7 +196,7 @@ export function Home() {
                     step="any"
                     min="0.01"
                     key={source}
-                    defaultValue={source === "preset" ? 20 : 60}
+                    defaultValue={defaults?.topology.max_transit_s ?? 60}
                   />
                 </label>
                 <label>
@@ -179,7 +218,9 @@ export function Home() {
                       type="number"
                       step="any"
                       name="fixed"
-                      defaultValue={0}
+                      defaultValue={
+                        defaults?.topology.clock_offset.fixed_s ?? 0
+                      }
                     />
                   </label>
                 )}
@@ -188,7 +229,11 @@ export function Home() {
             {error && <p role="alert">{error}</p>}
             <button
               className="primary"
-              disabled={busy || (source === "preset" && !presets.data?.length)}
+              disabled={
+                busy ||
+                (source === "preset" &&
+                  (!presets.data?.length || !settings.data || settings.isError))
+              }
             >
               {busy ? "Submitting…" : "Start run"}
             </button>

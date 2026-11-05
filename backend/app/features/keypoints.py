@@ -26,8 +26,9 @@ class Geometry:
 
 
 class Keypoints:
-    def __init__(self, cfg: KeypointConfig) -> None:
+    def __init__(self, cfg: KeypointConfig, device: str = "cpu") -> None:
         self.cfg = cfg
+        self.device = "cpu"
         self.sift = cv2.SIFT_create(nfeatures=cfg.max_keypoints)
         self.extractor: Any = None
         self.matcher: Any = None
@@ -44,10 +45,23 @@ class Keypoints:
                 )
                 if not all((cache / name).is_file() for name in names):
                     raise FileNotFoundError("local keypoint weights are unavailable")
-                self.extractor = ALIKED(max_num_keypoints=cfg.max_keypoints).eval()
-                self.matcher = LightGlue(features="aliked").eval()
+                self.device = (
+                    ("cuda" if torch.cuda.is_available() else "cpu") if device == "auto" else device
+                )
+                self.extractor = ALIKED(max_num_keypoints=cfg.max_keypoints).eval().to(self.device)
+                self.matcher = LightGlue(features="aliked").eval().to(self.device)
             except (ImportError, OSError, RuntimeError, ValueError) as exc:
+                self.close()
                 self.note = f"SIFT fallback ({type(exc).__name__})"
+
+    def close(self) -> None:
+        """Release learned models before the next pipeline job."""
+        self.extractor = None
+        self.matcher = None
+        if self.device.startswith("cuda"):
+            import torch
+
+            torch.cuda.empty_cache()
 
     def _points(self, a: Image, b: Image) -> tuple[Points, Points, bool]:
         if self.matcher is not None:
@@ -56,17 +70,19 @@ class Keypoints:
             try:
                 with torch.inference_mode():
                     x, y = (
-                        self.extractor.extract(torch.from_numpy(v).float()[None] / 255)
+                        self.extractor.extract(
+                            torch.from_numpy(v).float().to(self.device)[None] / 255
+                        )
                         for v in (a, b)
                     )
                     pairs = self.matcher({"image0": x, "image1": y})["matches"][0]
                     return (
-                        x["keypoints"][0, pairs[:, 0]].numpy(),
-                        y["keypoints"][0, pairs[:, 1]].numpy(),
+                        x["keypoints"][0, pairs[:, 0]].cpu().numpy(),
+                        y["keypoints"][0, pairs[:, 1]].cpu().numpy(),
                         bool(x["keypoints"].shape[1] and y["keypoints"].shape[1]),
                     )
             except (RuntimeError, ValueError, IndexError) as exc:
-                self.matcher = None
+                self.close()
                 self.note = f"SIFT fallback during inference ({type(exc).__name__})"
         ka, da = self.sift.detectAndCompute(a, None)
         kb, db = self.sift.detectAndCompute(b, None)

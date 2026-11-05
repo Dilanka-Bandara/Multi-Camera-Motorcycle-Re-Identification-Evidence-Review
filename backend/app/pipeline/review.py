@@ -1,5 +1,6 @@
 """Connect independent evidence checks to the sequential pipeline."""
 
+import logging
 import os
 from pathlib import Path
 
@@ -28,7 +29,7 @@ def review_queries(
     labs = {
         k: v for group in cameras.values() for k, v in corrected_lab(group, root, cfg.color).items()
     }
-    matcher = Keypoints(cfg.verifier.keypoints)
+    matcher = Keypoints(cfg.verifier.keypoints, cfg.detector.device)
     claims: dict[str, float] = {}
     for row in rows.values():
         if row:
@@ -36,31 +37,37 @@ def review_queries(
             claims[lead.candidate_track_id] = max(
                 claims.get(lead.candidate_track_id, 0), lead.scores.combined
             )
-    results = []
-    for query_id, row in rows.items():
-        left = tracks[query_id]
-        for candidate in row[: cfg.verifier.review_top_n]:
-            right = tracks[candidate.candidate_track_id]
-            geometry = matcher.review(left, right, root, candidate.pair_id)
-            rival = max((c.scores.combined for c in row if c is not candidate), default=0)
-            candidate.verification = review(
-                candidate,
-                left,
-                right,
-                features[query_id],
-                features[right.track_id],
-                labs[query_id],
-                labs[right.track_id],
-                clock,
-                cfg,
-                calibrator,
-                geometry.inliers,
-                geometry.extracted,
-                geometry.backend,
-                geometry.note,
-                geometry.path,
-                candidate.scores.combined - rival,
-                claims.get(right.track_id, 0) > candidate.scores.combined,
+    try:
+        results = []
+        for index, (query_id, row) in enumerate(rows.items(), start=1):
+            logging.getLogger(__name__).info(
+                "run_id=%s reviewing query=%s %s/%s", root.name, query_id, index, len(rows)
             )
-        results.append(resolve(query_id, row))
-    return results
+            left = tracks[query_id]
+            for candidate in row[: cfg.verifier.review_top_n]:
+                right = tracks[candidate.candidate_track_id]
+                geometry = matcher.review(left, right, root, candidate.pair_id)
+                rival = max((c.scores.combined for c in row if c is not candidate), default=0)
+                candidate.verification = review(
+                    candidate,
+                    left,
+                    right,
+                    features[query_id],
+                    features[right.track_id],
+                    labs[query_id],
+                    labs[right.track_id],
+                    clock,
+                    cfg,
+                    calibrator,
+                    geometry.inliers,
+                    geometry.extracted,
+                    geometry.backend,
+                    geometry.note,
+                    geometry.path,
+                    candidate.scores.combined - rival,
+                    claims.get(right.track_id, 0) > candidate.scores.combined,
+                )
+            results.append(resolve(query_id, row))
+        return results
+    finally:
+        matcher.close()

@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from threading import Lock
@@ -39,7 +40,11 @@ class Jobs:
     def submit(
         self, cfg: AppConfig, videos: dict[Camera, Path], groundtruth: dict[Camera, Path] | None
     ) -> str:
-        digest = hashlib.sha256(b"phase6-v1")
+        digest = hashlib.sha256(b"phase10-v1")
+        directory = Path(
+            os.environ.get("MOTO_CONFIG_DIR", Path(__file__).resolve().parents[3] / "configs")
+        )
+        digest.update((directory / "calibrator.json").read_bytes())
         digest.update(json.dumps(cfg.model_dump(mode="json"), sort_keys=True).encode())
         for path in [videos["A"], videos["B"], *((groundtruth or {}).values())]:
             with path.open("rb") as stream:

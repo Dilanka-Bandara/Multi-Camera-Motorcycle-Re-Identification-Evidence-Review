@@ -50,27 +50,41 @@ def routes(data: Path | None = None, models: Path | None = None) -> APIRouter:
         except (ValidationError, ValueError) as exc:
             raise HTTPException(422, str(exc)) from exc
 
+    def preset_directory(name: str) -> Path:
+        cfg = load_config(name)
+        return root / cfg.inputs.directory if cfg.inputs else fixture
+
     @router.get("/api/presets")
     def presets() -> list[str]:
-        return (
-            ["dev_fixture"]
-            if all(
-                (fixture / f).is_file()
-                for f in ("camera_A.mp4", "camera_B.mp4", "gt_A.csv", "gt_B.csv")
-            )
-            else []
+        directory = (
+            Path(os.environ.get("MOTO_CONFIG_DIR", Path(__file__).resolve().parents[3] / "configs"))
+            / "presets"
         )
+        return [
+            path.stem
+            for path in sorted(directory.glob("*.yaml"))
+            if all((preset_directory(path.stem) / f"camera_{c}.mp4").is_file() for c in ("A", "B"))
+        ]
+
+    @router.get("/api/presets/{name}")
+    def preset_settings(name: str) -> dict[str, Any]:
+        if name not in presets():
+            raise HTTPException(404, "Preset data unavailable")
+        cfg = load_config(name)
+        return {"target": cfg.target.model_dump(), "topology": cfg.topology.model_dump()}
 
     @router.post("/api/runs/from-preset")
     def preset(body: PresetRequest) -> dict[str, str]:
         if body.preset not in presets():
             raise HTTPException(404, "Preset data unavailable")
         cfg = config(body.preset, body.config_overrides)
+        inputs = preset_directory(body.preset)
+        truth = {c: inputs / f"gt_{c}.csv" for c in ("A", "B")}
         return {
             "run_id": jobs.submit(
                 cfg,
-                {"A": fixture / "camera_A.mp4", "B": fixture / "camera_B.mp4"},
-                {"A": fixture / "gt_A.csv", "B": fixture / "gt_B.csv"},
+                {"A": inputs / "camera_A.mp4", "B": inputs / "camera_B.mp4"},
+                truth if all(path.is_file() for path in truth.values()) else None,
             )
         }
 

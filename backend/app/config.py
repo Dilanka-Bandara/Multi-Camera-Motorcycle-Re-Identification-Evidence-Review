@@ -237,7 +237,25 @@ class EvaluationConfig(StrictModel):
     calibration_bins: Count
 
 
+class InputConfig(StrictModel):
+    directory: str
+
+    @model_validator(mode="after")
+    def relative_directory(self) -> Self:
+        """Keep preset data inside the deployment data directory on every platform."""
+        from pathlib import PurePosixPath, PureWindowsPath
+
+        if (
+            PureWindowsPath(self.directory).drive
+            or PurePosixPath(self.directory).is_absolute()
+            or ".." in self.directory.replace("\\", "/").split("/")
+        ):
+            raise ValueError("Preset input directory must be relative without parent traversal")
+        return self
+
+
 class AppConfig(StrictModel):
+    inputs: InputConfig | None = None
     evaluation: EvaluationConfig
     target: TargetConfig
     detector: DetectorConfig
@@ -282,9 +300,12 @@ def load_config(
     config_dir: Path | None = None,
 ) -> AppConfig:
     """Load defaults, a named preset, then per-run overrides and validate once."""
-    directory = config_dir or Path(os.environ.get(
-        "MOTO_CONFIG_DIR", str(Path(__file__).resolve().parents[2] / "configs"),
-    ))
+    directory = config_dir or Path(
+        os.environ.get(
+            "MOTO_CONFIG_DIR",
+            str(Path(__file__).resolve().parents[2] / "configs"),
+        )
+    )
 
     def read(path: Path) -> dict[str, Any]:
         value = yaml.safe_load(path.read_text(encoding="utf-8"))

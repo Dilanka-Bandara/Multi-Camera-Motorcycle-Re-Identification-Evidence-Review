@@ -1,0 +1,17 @@
+inputs:
+  directory: user/datasets/vntraffic_synth
+target:
+  classes:
+  - motorcycle
+detector:
+  mode: yolo
+cameras:
+  B:
+    start_time_s: 6.0
+topology:
+  direction: A_to_B
+  min_transit_s: 0
+  max_transit_s: 35.0
+  clock_offset:
+    mode: fixed
+    fixed_s: 6.0

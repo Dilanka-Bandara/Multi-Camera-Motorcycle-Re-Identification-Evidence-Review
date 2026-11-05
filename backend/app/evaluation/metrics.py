@@ -19,11 +19,14 @@ def evaluate(
     cameras: dict[str, str],
     bins: int,
 ) -> dict[str, Any]:
-    positives = rank1 = rank5 = absent = rejected = 0
+    positives = rank1 = rank5 = absent = rejected = unmapped = unlabelled_pairs = 0
     counts = {"accepted": [0, 0], "accepted_or_uncertain": [0, 0]}
     truth, confidence, false_matches = [], [], []
     for q in queries:
         ident = labels.get(q.query_track_id)
+        if ident is None:
+            unmapped += 1
+            continue
         other = "B" if cameras[q.query_track_id] == "A" else "A"
         has_match = ident in gallery[other]
         positives += int(has_match)
@@ -35,9 +38,11 @@ def evaluate(
         absent += int(not has_match)
         rejected += int(not has_match and q.outcome != "matched")
         for c, correct in zip(q.candidates, ranked, strict=True):
-            if c.verification:
+            if c.verification and c.candidate_track_id in labels:
                 truth.append(int(correct))
                 confidence.append(c.verification.confidence)
+            elif c.verification:
+                unlabelled_pairs += 1
             if q.best_pair_id == c.pair_id:
                 for mode, tally in counts.items():
                     if q.outcome == "matched" or (
@@ -74,4 +79,6 @@ def evaluate(
         expected_calibration_error=float(calibration) if truth else None,
         queries_with_match=positives,
         queries_without_match=absent,
+        excluded_unmapped_queries=unmapped,
+        excluded_unmapped_calibration_pairs=unlabelled_pairs,
     )
