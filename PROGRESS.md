@@ -130,3 +130,9 @@ Design issue to address before Phase 4: the specified clock-offset heuristic ret
 
 - Replaced the model provisioning placeholder with build-time YOLO primary/fallback, DINOv2-small, ALIKED and LightGlue loading. The Dockerfile generates an independent baked fixture outside the user volume. The fixture preset uses CPU SIFT explicitly; general runs retain LightGlue with offline SIFT fallback. Health now probes CUDA availability. Added scripts/check_offline_image.py for isolated-container checks.
 - Python 3.11 full suite passed (43 passed, one optional YOLO skip) and Ruff passed. Fresh CPU/GPU image checks are pending; passing source tests does not establish packaged acceptance.
+
+### Phase 8 CPU image verified from fresh clone
+
+- Cloned GitHub commit 0856473 into ignored .tools/phase8-clean and built the CPU image. With Docker --network none, the unprivileged app completed its baked dev_fixture, produced 12 queries, and scored Rank-1 1.0. No host data or model mounts were supplied. Repeat by starting the built image with --network none and running python /app/scripts/check_offline_image.py via docker exec.
+- Independently started the fresh clone's Compose app on an internal network with empty user data. A localhost-only inbound test relay exposed its UI without giving the app external network access. Started the fixture from the UI and observed the completed evidence review, 36 reviewed pairs and a +3.567 s estimate in 16.7 s. Replaced the source-mounted localhost:8080 preview with the verified packaged image and retained existing user runs.
+- Checked the actual learned keypoints path with networking disabled. ALIKED and LightGlue initialized from the baked cache and produced a geometry image, with zero inliers for the checked synthetic pair. Copied the primary YOLO weights into ignored models/ for local tests. Python 3.11 suite now passes all 44 tests, including real YOLO inference. GPU image validation remains in progress.
