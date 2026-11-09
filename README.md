@@ -327,3 +327,5 @@ See [the 4:20 demo script](docs/demo_script.md) for the presentation sequence an
 The completed local captioned demo is `data/demo/render-v2/moto-reid-demo.mp4` (not committed).
 See [final validation and remaining limits](docs/final_checks.md) for the fresh-clone/offline check,
 test timings, demo verification and artifact locations.
+For a complete record of the implemented work, measurements, validation and known limitations, see
+[the actual work completed report](docs/ACTUAL_WORK_COMPLETED.md).
