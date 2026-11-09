@@ -4,6 +4,13 @@ Multi-Camera Motorcycle Re-Identification & Evidence Review.
 
 The development fixture runs through tracking, cross-camera matching and independent verification. The browser workspace provides synchronized playback, evidence review, metrics, and JSON/CSV exports. CPU and GPU Docker images have passed offline fixture checks. See [PROGRESS.md](PROGRESS.md) for measured results and [BUILD_GUIDE.md](BUILD_GUIDE.md) for acceptance criteria.
 
+## Demo video
+
+Watch the 3–5 minute demonstration on [Google Drive](https://drive.google.com/drive/folders/1kXfJpLiEd0xqYn5BhS92hL7XoG8PIl1L?usp=sharing).
+It covers correct re-identification, visually similar but different motorcycles, rejected and
+uncertain cases, matching metrics, false matches and processing speed. The presentation
+sequence is in [docs/demo_script.md](docs/demo_script.md).
+
 ## Stack
 
 Python 3.11, FastAPI, Pydantic v2, React, TypeScript, Vite, Tailwind CSS and TanStack Query. The pipeline uses YOLO26 with YOLO11 fallback, BoT-SORT/ByteTrack, DINOv2, OpenCV, LightGlue/ALIKED with SIFT fallback, and SciPy assignment. Each run has its own filesystem directory.
