@@ -1,9 +1,9 @@
 # Actual implementation report
 
-**Project:** Multi-Camera Motorcycle Re-Identification & Evidence Review  
-**Report date:** 9 November 2026  
-**Specification:** `BUILD_GUIDE.md`  
-**Current GitHub revision:** `d131a45` on `main`  
+**Project:** Multi-Camera Motorcycle Re-Identification & Evidence Review
+**Report date:** 9 November 2026
+**Specification:** `BUILD_GUIDE.md`
+**Implementation baseline revision:** `d131a45` on `main`
 **Application:** http://localhost:8080 (configured locally for CUDA)
 
 This report describes the work that was actually implemented, tested, measured,
