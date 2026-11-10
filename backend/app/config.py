@@ -185,10 +185,14 @@ class VerifierConfig(StrictModel):
     p_accept: Probability
     p_reject: Probability
     review_top_n: Count
+    calibrator: str = "calibrator.json"  # file name only; older saved runs omit it
 
     @model_validator(mode="after")
     def ordered_thresholds(self) -> Self:
         """Reject contradictory decision thresholds."""
+        name = self.calibrator
+        if Path(name).name != name or "\\" in name or not name.endswith(".json"):
+            raise ValueError("calibrator must be a JSON file name inside the config directory")
         if self.p_reject >= self.p_accept:
             raise ValueError("p_reject must be less than p_accept")
         if self.keypoints.max_inliers_fail >= self.keypoints.min_inliers_pass:

@@ -44,7 +44,7 @@ class Jobs:
         directory = Path(
             os.environ.get("MOTO_CONFIG_DIR", Path(__file__).resolve().parents[3] / "configs")
         )
-        digest.update((directory / "calibrator.json").read_bytes())
+        digest.update((directory / cfg.verifier.calibrator).read_bytes())
         digest.update(json.dumps(cfg.model_dump(mode="json"), sort_keys=True).encode())
         for path in [videos["A"], videos["B"], *((groundtruth or {}).values())]:
             with path.open("rb") as stream:

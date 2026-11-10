@@ -1,0 +1,81 @@
+{
+  "method": "scikit-learn LogisticRegression on separately seeded fixture renderings",
+  "preset": "dev_fixture",
+  "tuning_seeds": [
+    101,
+    202,
+    303
+  ],
+  "excluded_baked_seed": 42,
+  "training_pairs": 108,
+  "training_positives": 26,
+  "features": [
+    "visual",
+    "vehicle_part",
+    "rider_part",
+    "color_sim",
+    "keypoint_inliers_norm",
+    "temporal",
+    "direction",
+    "track_quality_min",
+    "margin",
+    "missing_count"
+  ],
+  "settings": {
+    "tuning_seeds": [
+      101,
+      202,
+      303
+    ],
+    "seed": 42,
+    "max_iterations": 2000,
+    "regularizations": [
+      1.0,
+      10.0,
+      100.0
+    ],
+    "min_match_scores": [
+      0.45,
+      0.55,
+      0.65,
+      0.75,
+      0.85,
+      0.9
+    ],
+    "ambiguity_margins": [
+      0.02,
+      0.03,
+      0.04,
+      0.05,
+      0.06,
+      0.07
+    ],
+    "accept_probabilities": [
+      0.5,
+      0.65,
+      0.75,
+      0.85
+    ],
+    "reject_probabilities": [
+      0.1,
+      0.25,
+      0.35
+    ]
+  },
+  "constraint": "every tuning fixture keeps both lookalike pairs flagged ambiguous",
+  "selection": "pooled accepted F1, precision, wider ambiguity margin, smaller C",
+  "regularization": 10.0,
+  "tuning_accepted": {
+    "tp": 10,
+    "fp": 0,
+    "positives": 27,
+    "f1": 0.5405405405405406,
+    "precision": 1.0
+  },
+  "thresholds": {
+    "min_match_score": 0.65,
+    "ambiguity_margin": 0.03,
+    "p_accept": 0.5,
+    "p_reject": 0.1
+  }
+}

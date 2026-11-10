@@ -237,6 +237,15 @@ critical timing rejection before probability thresholds. High-severity contradic
 prevent acceptance. Coefficients in configs/calibrator.json are fitted from fourteen tuning pairs
 using logistic regression. Their small training sample limits probabilistic interpretation.
 
+Each preset names its coefficient file with `verifier.calibrator`. The development fixture uses
+configs/calibrator_dev_fixture.json because its dummy embedder and SIFT geometry produce features
+distributed differently from DINOv2 and LightGlue. With the real-data coefficients every fixture
+probability fell between 0.41 and 0.51, so no fixture candidate could be accepted or rejected.
+`scripts/fit_fixture_calibrator.py` fits the fixture coefficients and selects its four thresholds
+on three separately seeded tuning fixtures (seeds 101, 202, 303; 108 reviewed pairs, 26 positive).
+The baked fixture (seed 42) is excluded from fitting and selection. Selection is constrained to
+settings that keep both lookalike pairs flagged ambiguous on every tuning fixture.
+
 ## Export format
 
 Each run contains results.json validated by RunResult in backend/app/schemas.py, tracks with normalized
@@ -268,13 +277,21 @@ Run it with docker exec against an image started with --network none.
 
 | Dataset / evaluation | Accepted precision | Recall | F1 | Rank-1 | Correct rejection | False accepted | ECE | Detection FPS A/B | Hardware |
 |---|---|---|---|---|---|---|---|---|---|
-| Development fixture, full regression | N/A | 0 | 0 | 1.00 (9/9) | 1.00 (3/3) | 0 | 0.261 | N/A (GT detector) | Ryzen 7 5800H CPU |
+| Development fixture (seed 42), fixture calibration | 1.00 (3/3) | 0.33 (3/9) | 0.50 | 1.00 (9/9) | 1.00 (3/3) | 0 | 0.129 | N/A (GT detector) | Ryzen 7 5800H CPU |
 | VnTraffic synthetic, motorcycle detector, held-out | N/A | 0 | 0 | 0.167 (2/12) | 1.00 (3/3) | 0 | 0.290 | 18.01 / 17.24 | RTX 3050 Laptop 4 GB |
 | RoundaboutHD cameras 1/2, all vehicles, held-out | N/A | 0 | 0 | 0.714 (10/14) | 1.00 (12/12) | 0 | 0.164 | 19.03 / 29.11 | RTX 3050 Laptop 4 GB |
 | RoundaboutHD motorcycle subset | N/A | N/A | N/A | N/A | N/A | N/A | N/A | N/A | Class mapping unverified |
 
-No GT-mapped held-out queries were accepted, so precision is undefined rather than 100%. Correct rejection permits
-uncertain outcomes, as required by the guide. RoundaboutHD's statistics workbook has no
+On the fixture, three of nine true matches are accepted, none falsely. The other six stay
+uncertain: both lookalike queries, three whose candidate is also claimed by an A-only query, and
+one with zero SIFT inliers. Sixteen wrong candidates are rejected and no true pair is rejected.
+The tuning fixtures render the same 14 sprite designs with different transit times and noise, so
+this row measures stability across renderings, not generalization to unseen vehicles. With the
+real-data coefficients the same fixture accepted nothing (ECE 0.261); see the
+[earlier fixture report](reports/dev_fixture_calibrated_metrics.md).
+
+No GT-mapped held-out real-data queries were accepted, so their precision is undefined rather
+than 100%. Correct rejection permits uncertain outcomes, as required by the guide. RoundaboutHD's statistics workbook has no
 motorcycle-labelled rows, but its local SCT IDs are not assumed to be global IDs. VnTraffic's GT
 has no classes; its row evaluates motorcycle-detector tracks against available identity boxes.
 Fifty-four RoundaboutHD and eleven VnTraffic queries could not be mapped to GT and are excluded.
@@ -283,14 +300,15 @@ its correctness is unknown and it is not counted as either a true or false accep
 Candidate-level verdicts can also differ from the query's final assigned outcome.
 See [RoundaboutHD held-out metrics](reports/roundabouthd_pair_held_out_metrics.md),
 [VnTraffic held-out metrics](reports/vntraffic_synth_held_out_metrics.md),
-[fixture metrics](reports/dev_fixture_calibrated_metrics.md), and
+[fixture metrics](reports/dev_fixture_fixture_calibrated_metrics.md) with its
+[fitting manifest](reports/dev_fixture_training_manifest.json), and
 [three screenshot-backed near-misses](docs/near_misses.md).
 
 Real-data evaluation replays frozen raw verifier features with learned coefficients and tuned
 thresholds. Assignment is recomputed within each query split. The displayed FPS comes from the
 actual source YOLO pipelines, whose total wall times were 530.1 s (RoundaboutHD, two 60 s clips)
 and 548.8 s (VnTraffic, 17 s A and 35 s B including blank delay). These are detection throughput,
-not end-to-end real-time claims. The fixture rerun with fitted coefficients took 17.3 s.
+not end-to-end real-time claims. The fixture run with its own coefficients took 15.1 s.
 
 The fixture has limited viewpoint variation and no separate rider annotations. Its detector uses
 ground truth and its appearance encoder is deterministic. Real-data estimates use small held-out splits.

@@ -58,6 +58,36 @@ The fitted coefficients are now published in `configs/calibrator.json`, and
 both real-data presets contain the tuning-selected thresholds. The original
 coefficients are preserved in `reports/calibrator_handset_baseline.json`.
 
+## Development fixture calibration
+
+The fixture preset replaces DINOv2 and LightGlue with a deterministic dummy
+embedder and SIFT, so the pooled real-data coefficients do not describe its
+features: they placed every fixture candidate between 0.41 and 0.51, outside
+both decision thresholds. `verifier.calibrator` therefore lets a preset name its
+own coefficient file, and the fixture uses `configs/calibrator_dev_fixture.json`.
+
+`scripts/fit_fixture_calibrator.py` generates tuning fixtures from the seeds in
+`configs/data_preparation.yaml` (`fixture_calibration`), runs the unmodified
+pipeline on each, fits `LogisticRegression` on every reviewed pair and searches
+regularization, `min_match_score`, `ambiguity_margin`, `p_accept` and `p_reject`.
+It maximizes pooled accepted F1, then precision, then prefers the wider ambiguity
+margin and the stronger regularization. Settings that leave either lookalike
+pair unflagged on any tuning fixture are discarded. The script refuses to run if
+the baked seed appears among the tuning seeds.
+
+The published fit used seeds 101, 202 and 303: 108 pairs, 26 positive. It chose
+C = 10, minimum match score 0.65, ambiguity margin 0.03, accept 0.50 and reject
+0.10, with 10 of 27 tuning matches accepted and none false. On the baked seed-42
+fixture, evaluated after selection, 3 of 9 true matches are accepted with no
+false accept, 16 wrong candidates are rejected, Rank-1 is 9/9, ROC-AUC 0.959 and
+ECE 0.129. All fixtures share the same 14 sprite designs and differ in transit
+times and noise; this is not evidence about unseen vehicles or real footage.
+
+```sh
+python scripts/fit_fixture_calibrator.py \
+  --work data/user/calibration/fixture-next-work --out data/user/calibration/fixture-next
+```
+
 ## Current evidence
 
 The final pooled fit (`data/user/calibration/pooled-v1`) has fourteen labelled

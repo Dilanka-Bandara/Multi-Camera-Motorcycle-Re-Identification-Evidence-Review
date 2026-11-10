@@ -108,6 +108,7 @@ verifier:
   p_accept: 0.75
   p_reject: 0.35
   review_top_n: 3                # verifier reviews top-N candidates per query, not only the winner
+  calibrator: calibrator.json    # coefficient file in the config directory; presets may select another
 
 runtime:
   data_dir: /app/data

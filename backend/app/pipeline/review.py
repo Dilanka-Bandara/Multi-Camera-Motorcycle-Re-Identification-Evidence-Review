@@ -24,7 +24,7 @@ def review_queries(
     directory = Path(
         os.environ.get("MOTO_CONFIG_DIR", Path(__file__).resolve().parents[3] / "configs")
     )
-    calibrator = Calibrator.load(directory / "calibrator.json")
+    calibrator = Calibrator.load(directory / cfg.verifier.calibrator)
     tracks = {t.track_id: t for camera in cameras.values() for t in camera}
     labs = {
         k: v for group in cameras.values() for k, v in corrected_lab(group, root, cfg.color).items()

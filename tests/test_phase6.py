@@ -43,6 +43,11 @@ def test_job_review_download_and_range(tmp_path: Path) -> None:
         assert submit() == run_id
         full = RunResult.model_validate(client.get(api + "/export.json").json())
         assert full.metrics and full.metrics["rank1"] >= 0.8
+        accepted = full.metrics["decisions"]["accepted"]
+        assert accepted["tp"] >= 1 and accepted["fp"] == 0
+        verdicts = {c.verification.status for q in full.queries for c in q.candidates
+                    if c.verification}
+        assert verdicts == {"accepted", "uncertain", "rejected"}
         assert client.get(api + "/metrics").json() == full.metrics
         assert "boxes" not in client.get(api).json()["tracks_A"][0]
         assert client.get(api + "/tracks/A").json()[0]["boxes"]

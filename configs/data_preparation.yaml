@@ -17,6 +17,16 @@ calibration:
   ambiguity_margins: [0.02, 0.05, 0.08]
   accept_probabilities: [0.50, 0.65, 0.75, 0.85]
   reject_probabilities: [0.10, 0.25, 0.35]
+fixture_calibration:
+  # Separately seeded renderings of the development fixture; the baked seed (42) is excluded.
+  tuning_seeds: [101, 202, 303]
+  seed: 42
+  max_iterations: 2000
+  regularizations: [1.0, 10.0, 100.0]
+  min_match_scores: [0.45, 0.55, 0.65, 0.75, 0.85, 0.90]
+  ambiguity_margins: [0.02, 0.03, 0.04, 0.05, 0.06, 0.07]
+  accept_probabilities: [0.50, 0.65, 0.75, 0.85]
+  reject_probabilities: [0.10, 0.25, 0.35]
 roundabout:
   lower_quantile: 0.05
   upper_quantile: 0.95

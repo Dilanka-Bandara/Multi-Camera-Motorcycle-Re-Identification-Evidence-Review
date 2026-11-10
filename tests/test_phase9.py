@@ -162,3 +162,16 @@ def test_calibration_roundtrip_and_extreme_scores(tmp_path: Path) -> None:
         calibration.probability({"other": 1})
     with pytest.raises(FileExistsError):
         calibration.save(path)
+
+
+@pytest.mark.parametrize("name", ["../calibrator.json", "nested/calibrator.json", "weights.pkl"])
+def test_calibrator_setting_must_be_a_local_json_name(name: str) -> None:
+    with pytest.raises(ValueError):
+        load_config(overrides={"verifier": {"calibrator": name}})
+
+
+def test_fixture_calibrator_matches_the_feature_contract() -> None:
+    directory = Path("configs")
+    fixture = Calibrator.load(directory / load_config("dev_fixture").verifier.calibrator)
+    default = Calibrator.load(directory / load_config().verifier.calibrator)
+    assert fixture.weights.keys() == default.weights.keys() and fixture != default
